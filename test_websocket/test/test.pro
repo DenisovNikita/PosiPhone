@@ -20,15 +20,15 @@ FORMS += \
     mainwindow.ui
 
 SOURCES += ./sioclient/src/sio_client.cpp
-           ./sioclient/src/sio_packet.cpp
+SOURCES += ./sioclient/src/internal/sio_packet.cpp
 
 HEADERS  += ./sioclient/src/sio_client.h
-            ./sioclient/src/sio_message.h
+HEADERS  += ./sioclient/src/sio_message.h
 
-INCLUDEPATH += $$PWD/sioclient/lib/rapidjson/include
-INCLUDEPATH += $$PWD/sioclient/lib/websocketpp
-INCLUDEPATH += /usr/local/include/boost
-LIBS += -L"/usr/local/include/boost" -lboost_system
+INCLUDEPATH += ./sioclient/lib/rapidjson/include
+INCLUDEPATH += ./sioclient/lib/websocketpp
+INCLUDEPATH += ./sioclient/lib/asio/asio/include
+INCLUDEPATH += ./sioclient/lib/catch
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
