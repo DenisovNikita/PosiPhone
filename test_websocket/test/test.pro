@@ -20,21 +20,21 @@ HEADERS += \
 FORMS += \
     mainwindow.ui
 
-INCLUDEPATH += ./sioclient/lib/asio/asio/include
-INCLUDEPATH += ./sioclient/lib/websocketpp
-INCLUDEPATH += ./sioclient/lib/rapidjson/include
-INCLUDEPATH += ./sioclient/src
+INCLUDEPATH += ./socket.io-client-cpp/lib/asio/asio/include
+INCLUDEPATH += ./socket.io-client-cpp/lib/websocketpp
+INCLUDEPATH += ./socket.io-client-cpp/lib/rapidjson/include
+INCLUDEPATH += ./socket.io-client-cpp/src
 
-SOURCES += ./sioclient/src/sio_client.cpp \
-    ./sioclient/src/sio_socket.cpp \
-    ./sioclient/src/internal/sio_client_impl.cpp \
-    ./sioclient/src/internal/sio_packet.cpp
+SOURCES += ./socket.io-client-cpp/src/sio_client.cpp \
+    ./socket.io-client-cpp/src/sio_socket.cpp \
+    ./socket.io-client-cpp/src/internal/sio_client_impl.cpp \
+    ./socket.io-client-cpp/src/internal/sio_packet.cpp
 
-HEADERS += ./sioclient/src/sio_client.h \
-    ./sioclient/src/sio_socket.h \
-    ./sioclient/src/sio_message.h \
-    ./sioclient/src/internal/sio_client_impl.h \
-    ./sioclient/src/internal/sio_packet.h
+HEADERS += ./socket.io-client-cpp/src/sio_client.h \
+    ./socket.io-client-cpp/src/sio_socket.h \
+    ./socket.io-client-cpp/src/sio_message.h \
+    ./socket.io-client-cpp/src/internal/sio_client_impl.h \
+    ./socket.io-client-cpp/src/internal/sio_packet.h
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
