@@ -13,22 +13,28 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp
 
+
 HEADERS += \
     mainwindow.h
 
 FORMS += \
     mainwindow.ui
 
-SOURCES += ./sioclient/src/sio_client.cpp
-SOURCES += ./sioclient/src/internal/sio_packet.cpp
-
-HEADERS  += ./sioclient/src/sio_client.h
-HEADERS  += ./sioclient/src/sio_message.h
-
-INCLUDEPATH += ./sioclient/lib/rapidjson/include
-INCLUDEPATH += ./sioclient/lib/websocketpp
 INCLUDEPATH += ./sioclient/lib/asio/asio/include
-INCLUDEPATH += ./sioclient/lib/catch
+INCLUDEPATH += ./sioclient/lib/websocketpp
+INCLUDEPATH += ./sioclient/lib/rapidjson/include
+INCLUDEPATH += ./sioclient/src
+
+SOURCES += ./sioclient/src/sio_client.cpp \
+    ./sioclient/src/sio_socket.cpp \
+    ./sioclient/src/internal/sio_client_impl.cpp \
+    ./sioclient/src/internal/sio_packet.cpp
+
+HEADERS += ./sioclient/src/sio_client.h \
+    ./sioclient/src/sio_socket.h \
+    ./sioclient/src/sio_message.h \
+    ./sioclient/src/internal/sio_client_impl.h \
+    ./sioclient/src/internal/sio_packet.h
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
