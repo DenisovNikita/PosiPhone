@@ -2,7 +2,7 @@
 // chat_server.cpp
 // ~~~~~~~~~~~~~~~
 //
-// Copyright (c) 2003-2020 Christopher M. Kohlhoff (chris at kohlhoff dot com)
+// Copyright (c) 2003-2019 Christopher M. Kohlhoff (chris at kohlhoff dot com)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -204,7 +204,10 @@ int main(int argc, char* argv[])
         {
             unsigned short port = std::atoi(argv[i]);
             co_spawn(io_context,
-                     listener(tcp::acceptor(io_context, {tcp::v4(), port})),
+                     [&io_context, port]
+                     {
+                         return listener(tcp::acceptor(io_context, {tcp::v4(), port}));
+                     },
                      detached);
         }
 
