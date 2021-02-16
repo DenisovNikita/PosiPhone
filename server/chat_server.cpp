@@ -205,6 +205,7 @@ int main(int argc, char* argv[])
         for (int i = 1; i < argc; ++i)
         {
             unsigned short port = std::atoi(argv[i]);
+            std::cerr << "port = " << port << "\n";
             co_spawn(io_context,
                      [&io_context, port]
                      {
@@ -212,11 +213,16 @@ int main(int argc, char* argv[])
                      },
                      detached);
         }
+        std::cerr << "after for\n";
 
         boost::asio::signal_set signals(io_context, SIGINT, SIGTERM);
         signals.async_wait([&](auto, auto){ io_context.stop(); });
 
+        std::cerr << "before run\n";
+
         io_context.run();
+
+        std::cerr << "after run\n";
     }
     catch (std::exception& e)
     {
