@@ -8,6 +8,8 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
+#define BOOST_ASIO_HAS_CO_AWAIT
+
 #include <cstdlib>
 #include <deque>
 #include <iostream>
@@ -86,7 +88,7 @@ class chat_session
           public std::enable_shared_from_this<chat_session>
 {
 public:
-    chat_session(tcp::socket socket, chat_room& room)
+    chat_session(boost::asio::ip::tcp::socket socket, chat_room& room)
             : socket_(std::move(socket)),
               timer_(socket_.get_executor()),
               room_(room)
@@ -114,7 +116,7 @@ public:
     }
 
 private:
-    awaitable<void> reader()
+    boost::asio::awaitable<void> reader()
     {
         try
         {
