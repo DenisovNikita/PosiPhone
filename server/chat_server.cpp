@@ -8,6 +8,8 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
+#define BOOST_ASIO_HAS_CO_AWAIT
+
 #include <cstdlib>
 #include <deque>
 #include <iostream>
@@ -86,7 +88,7 @@ class chat_session
           public std::enable_shared_from_this<chat_session>
 {
 public:
-    chat_session(tcp::socket socket, chat_room& room)
+    chat_session(boost::asio::ip::tcp::socket socket, chat_room& room)
             : socket_(std::move(socket)),
               timer_(socket_.get_executor()),
               room_(room)
@@ -114,7 +116,7 @@ public:
     }
 
 private:
-    awaitable<void> reader()
+    boost::asio::awaitable<void> reader()
     {
         try
         {
@@ -203,6 +205,7 @@ int main(int argc, char* argv[])
         for (int i = 1; i < argc; ++i)
         {
             unsigned short port = std::atoi(argv[i]);
+            std::cerr << "port = " << port << "\n";
             co_spawn(io_context,
                      [&io_context, port]
                      {
@@ -210,11 +213,16 @@ int main(int argc, char* argv[])
                      },
                      detached);
         }
+        std::cerr << "after for\n";
 
         boost::asio::signal_set signals(io_context, SIGINT, SIGTERM);
         signals.async_wait([&](auto, auto){ io_context.stop(); });
 
+        std::cerr << "before run\n";
+
         io_context.run();
+
+        std::cerr << "after run\n";
     }
     catch (std::exception& e)
     {
