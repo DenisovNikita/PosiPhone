@@ -6,6 +6,4 @@ model::model() : me(MyCircle::create(QPointF(100, 100))) { // TODO: where to spa
 
     // TODO: pull other circles
     this->addItem(me);
-    auto temp = MyCircle::create(QPointF(-100, -100));
-    this->addItem(temp);
 }
