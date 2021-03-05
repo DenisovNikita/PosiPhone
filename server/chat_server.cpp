@@ -1,192 +1,250 @@
-//
-// chat_server.cpp
-// ~~~~~~~~~~~~~~~
-//
-// Copyright (c) 2003-2019 Christopher M. Kohlhoff (chris at kohlhoff dot com)
-//
-// Distributed under the Boost Software License, Version 1.0. (See accompanying
-// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-//
-
-#define BOOST_ASIO_HAS_CO_AWAIT
-
-#include <cstdlib>
+#include <ctime>
+#include <string>
 #include <deque>
 #include <iostream>
 #include <list>
+#include <unordered_map>
+#include <unordered_set>
 #include <memory>
-#include <set>
-#include <string>
-#include <utility>
-#include <boost/asio/awaitable.hpp>
-#include <boost/asio/detached.hpp>
-#include <boost/asio/co_spawn.hpp>
-#include <boost/asio/io_context.hpp>
-#include <boost/asio/ip/tcp.hpp>
-#include <boost/asio/read_until.hpp>
-#include <boost/asio/redirect_error.hpp>
-#include <boost/asio/signal_set.hpp>
-#include <boost/asio/steady_timer.hpp>
-#include <boost/asio/use_awaitable.hpp>
-#include <boost/asio/write.hpp>
+#include <thread>
+#include <mutex>
+#include <algorithm>
+#include <iomanip>
+#include <array>
+#include <boost/bind.hpp>
+#include <boost/asio.hpp>
+#include <boost/thread/thread.hpp>
+#include "protocol.hpp"
 
 using boost::asio::ip::tcp;
-using boost::asio::awaitable;
-using boost::asio::co_spawn;
-using boost::asio::detached;
-using boost::asio::redirect_error;
-using boost::asio::use_awaitable;
 
-//----------------------------------------------------------------------
+namespace
+{
+    std::string getTimestamp()
+    {
+        time_t t = time(0);   // get time now
+        struct tm * now = localtime(&t);
+        std::stringstream ss;
+        ss << '[' << (now->tm_year + 1900) << '-' << std::setfill('0')
+           << std::setw(2) << (now->tm_mon + 1) << '-' << std::setfill('0')
+           << std::setw(2) << now->tm_mday << ' ' << std::setfill('0')
+           << std::setw(2) << now->tm_hour << ":" << std::setfill('0')
+           << std::setw(2) << now->tm_min << ":" << std::setfill('0')
+           << std::setw(2) << now->tm_sec << "] ";
 
-class chat_participant
+        return ss.str();
+    }
+
+    class workerThread
+    {
+    public:
+        static void run(std::shared_ptr<boost::asio::io_service> io_service)
+        {
+            {
+                std::lock_guard < std::mutex > lock(m);
+                std::cout << "[" << std::this_thread::get_id() << "] Thread starts" << std::endl;
+            }
+
+            io_service->run();
+
+            {
+                std::lock_guard < std::mutex > lock(m);
+                std::cout << "[" << std::this_thread::get_id() << "] Thread ends" << std::endl;
+            }
+
+        }
+    private:
+        static std::mutex m;
+    };
+
+    std::mutex workerThread::m;
+}
+
+class participant
 {
 public:
-    virtual ~chat_participant() {}
-    virtual void deliver(const std::string& msg) = 0;
+    virtual ~participant() {}
+    virtual void onMessage(std::array<char, MAX_IP_PACK_SIZE> & msg) = 0;
 };
 
-typedef std::shared_ptr<chat_participant> chat_participant_ptr;
-
-//----------------------------------------------------------------------
-
-class chat_room
-{
+class chatRoom {
 public:
-    void join(chat_participant_ptr participant)
+    void enter(std::shared_ptr<participant> participant, const std::string & nickname)
     {
         participants_.insert(participant);
-        for (auto msg: recent_msgs_)
-            participant->deliver(msg);
+        name_table_[participant] = nickname;
+        std::for_each(recent_msgs_.begin(), recent_msgs_.end(),
+                      boost::bind(&participant::onMessage, participant, _1));
     }
 
-    void leave(chat_participant_ptr participant)
+    void leave(std::shared_ptr<participant> participant)
     {
         participants_.erase(participant);
+        name_table_.erase(participant);
     }
 
-    void deliver(const std::string& msg)
+    void broadcast(std::array<char, MAX_IP_PACK_SIZE>& msg, std::shared_ptr<participant> participant)
     {
-        recent_msgs_.push_back(msg);
-        while (recent_msgs_.size() > max_recent_msgs)
-            recent_msgs_.pop_front();
+        std::string timestamp = getTimestamp();
+        std::string nickname = getNickname(participant);
+        std::array<char, MAX_IP_PACK_SIZE> formatted_msg;
 
-        for (auto participant: participants_)
-            participant->deliver(msg);
+        // boundary correctness is guarded by protocol.hpp
+        strcpy(formatted_msg.data(), timestamp.c_str());
+        strcat(formatted_msg.data(), nickname.c_str());
+        strcat(formatted_msg.data(), msg.data());
+
+        recent_msgs_.push_back(formatted_msg);
+        while (recent_msgs_.size() > max_recent_msgs)
+        {
+            recent_msgs_.pop_front();
+        }
+
+        std::for_each(participants_.begin(), participants_.end(),
+                      boost::bind(&participant::onMessage, _1, std::ref(formatted_msg)));
+    }
+
+    std::string getNickname(std::shared_ptr<participant> participant)
+    {
+        return name_table_[participant];
     }
 
 private:
-    std::set<chat_participant_ptr> participants_;
     enum { max_recent_msgs = 100 };
-    std::deque<std::string> recent_msgs_;
+    std::unordered_set<std::shared_ptr<participant>> participants_;
+    std::unordered_map<std::shared_ptr<participant>, std::string> name_table_;
+    std::deque<std::array<char, MAX_IP_PACK_SIZE>> recent_msgs_;
 };
 
-//----------------------------------------------------------------------
-
-class chat_session
-        : public chat_participant,
-          public std::enable_shared_from_this<chat_session>
+class personInRoom: public participant,
+                    public std::enable_shared_from_this<personInRoom>
 {
 public:
-    chat_session(boost::asio::ip::tcp::socket socket, chat_room& room)
-            : socket_(std::move(socket)),
-              timer_(socket_.get_executor()),
-              room_(room)
+    personInRoom(boost::asio::io_service& io_service,
+                 boost::asio::io_service::strand& strand, chatRoom& room)
+            : socket_(io_service), strand_(strand), room_(room)
     {
-        timer_.expires_at(std::chrono::steady_clock::time_point::max());
     }
+
+    tcp::socket& socket() { return socket_; }
 
     void start()
     {
-        room_.join(shared_from_this());
-
-        co_spawn(socket_.get_executor(),
-                 [self = shared_from_this()]{ return self->reader(); },
-                 detached);
-
-        co_spawn(socket_.get_executor(),
-                 [self = shared_from_this()]{ return self->writer(); },
-                 detached);
+        boost::asio::async_read(socket_,
+                                boost::asio::buffer(nickname_, nickname_.size()),
+                                strand_.wrap(boost::bind(&personInRoom::nicknameHandler, shared_from_this(), _1)));
     }
 
-    void deliver(const std::string& msg)
+    void onMessage(std::array<char, MAX_IP_PACK_SIZE>& msg)
     {
+        bool write_in_progress = !write_msgs_.empty();
         write_msgs_.push_back(msg);
-        timer_.cancel_one();
+        if (!write_in_progress)
+        {
+            boost::asio::async_write(socket_,
+                                     boost::asio::buffer(write_msgs_.front(), write_msgs_.front().size()),
+                                     strand_.wrap(boost::bind(&personInRoom::writeHandler, shared_from_this(), _1)));
+        }
     }
 
 private:
-    boost::asio::awaitable<void> reader()
+    void nicknameHandler(const boost::system::error_code& error)
     {
-        try
+        if (strlen(nickname_.data()) <= MAX_NICKNAME - 2)
         {
-            for (std::string read_msg;;)
-            {
-                std::size_t n = co_await boost::asio::async_read_until(socket_,
-                                                                       boost::asio::dynamic_buffer(read_msg, 1024), "\n", use_awaitable);
-
-                room_.deliver(read_msg.substr(0, n));
-                read_msg.erase(0, n);
-            }
+            strcat(nickname_.data(), ": ");
         }
-        catch (std::exception&)
+        else
         {
-            stop();
+            //cut off nickname if too long
+            nickname_[MAX_NICKNAME - 2] = ':';
+            nickname_[MAX_NICKNAME - 1] = ' ';
+        }
+
+        room_.enter(shared_from_this(), std::string(nickname_.data()));
+
+        boost::asio::async_read(socket_,
+                                boost::asio::buffer(read_msg_, read_msg_.size()),
+                                strand_.wrap(boost::bind(&personInRoom::readHandler, shared_from_this(), _1)));
+    }
+
+    void readHandler(const boost::system::error_code& error)
+    {
+        if (!error)
+        {
+            room_.broadcast(read_msg_, shared_from_this());
+
+            boost::asio::async_read(socket_,
+                                    boost::asio::buffer(read_msg_, read_msg_.size()),
+                                    strand_.wrap(boost::bind(&personInRoom::readHandler, shared_from_this(), _1)));
+        }
+        else
+        {
+            room_.leave(shared_from_this());
         }
     }
 
-    awaitable<void> writer()
+    void writeHandler(const boost::system::error_code& error)
     {
-        try
+        if (!error)
         {
-            while (socket_.is_open())
+            write_msgs_.pop_front();
+
+            if (!write_msgs_.empty())
             {
-                if (write_msgs_.empty())
-                {
-                    boost::system::error_code ec;
-                    co_await timer_.async_wait(redirect_error(use_awaitable, ec));
-                }
-                else
-                {
-                    co_await boost::asio::async_write(socket_,
-                                                      boost::asio::buffer(write_msgs_.front()), use_awaitable);
-                    write_msgs_.pop_front();
-                }
+                boost::asio::async_write(socket_,
+                                         boost::asio::buffer(write_msgs_.front(), write_msgs_.front().size()),
+                                         strand_.wrap(boost::bind(&personInRoom::writeHandler, shared_from_this(), _1)));
             }
         }
-        catch (std::exception&)
+        else
         {
-            stop();
+            room_.leave(shared_from_this());
         }
-    }
-
-    void stop()
-    {
-        room_.leave(shared_from_this());
-        socket_.close();
-        timer_.cancel();
     }
 
     tcp::socket socket_;
-    boost::asio::steady_timer timer_;
-    chat_room& room_;
-    std::deque<std::string> write_msgs_;
+    boost::asio::io_service::strand& strand_;
+    chatRoom& room_;
+    std::array<char, MAX_NICKNAME> nickname_;
+    std::array<char, MAX_IP_PACK_SIZE> read_msg_;
+    std::deque<std::array<char, MAX_IP_PACK_SIZE> > write_msgs_;
 };
 
-//----------------------------------------------------------------------
-
-awaitable<void> listener(tcp::acceptor acceptor)
+class server
 {
-    chat_room room;
-
-    for (;;)
+public:
+    server(boost::asio::io_service& io_service,
+           boost::asio::io_service::strand& strand,
+           const tcp::endpoint& endpoint)
+            : io_service_(io_service), strand_(strand), acceptor_(io_service, endpoint)
     {
-        std::make_shared<chat_session>(
-                co_await acceptor.async_accept(use_awaitable),
-                room
-        )->start();
+        run();
     }
-}
+
+private:
+
+    void run()
+    {
+        std::shared_ptr<personInRoom> new_participant(new personInRoom(io_service_, strand_, room_));
+        acceptor_.async_accept(new_participant->socket(), strand_.wrap(boost::bind(&server::onAccept, this, new_participant, _1)));
+    }
+
+    void onAccept(std::shared_ptr<personInRoom> new_participant, const boost::system::error_code& error)
+    {
+        if (!error)
+        {
+            new_participant->start();
+        }
+
+        run();
+    }
+
+    boost::asio::io_service& io_service_;
+    boost::asio::io_service::strand& strand_;
+    tcp::acceptor acceptor_;
+    chatRoom room_;
+};
 
 //----------------------------------------------------------------------
 
@@ -200,31 +258,37 @@ int main(int argc, char* argv[])
             return 1;
         }
 
-        boost::asio::io_context io_context(1);
+        std::shared_ptr<boost::asio::io_service> io_service(new boost::asio::io_service);
+        boost::shared_ptr<boost::asio::io_service::work> work(new boost::asio::io_service::work(*io_service));
+        boost::shared_ptr<boost::asio::io_service::strand> strand(new boost::asio::io_service::strand(*io_service));
 
+        std::cout << "[" << std::this_thread::get_id() << "]" << "server starts" << std::endl;
+
+        std::list < std::shared_ptr < server >> servers;
         for (int i = 1; i < argc; ++i)
         {
-            unsigned short port = std::atoi(argv[i]);
-            std::cerr << "port = " << port << "\n";
-            co_spawn(io_context,
-                     [&io_context, port]
-                     {
-                         return listener(tcp::acceptor(io_context, {tcp::v4(), port}));
-                     },
-                     detached);
+            tcp::endpoint endpoint(tcp::v4(), std::atoi(argv[i]));
+            std::shared_ptr<server> a_server(new server(*io_service, *strand, endpoint));
+            servers.push_back(a_server);
         }
-        std::cerr << "after for\n";
 
-        boost::asio::signal_set signals(io_context, SIGINT, SIGTERM);
-        signals.async_wait([&](auto, auto){ io_context.stop(); });
+        boost::thread_group workers;
+        for (int i = 0; i < 1; ++i)
+        {
+            boost::thread * t = new boost::thread{ boost::bind(&workerThread::run, io_service) };
 
-        std::cerr << "before run\n";
+#ifdef __linux__
+            // bind cpu affinity for worker thread in linux
+            cpu_set_t cpuset;
+            CPU_ZERO(&cpuset);
+            CPU_SET(i, &cpuset);
+            pthread_setaffinity_np(t->native_handle(), sizeof(cpu_set_t), &cpuset);
+#endif
+            workers.add_thread(t);
+        }
 
-        io_context.run();
-
-        std::cerr << "after run\n";
-    }
-    catch (std::exception& e)
+        workers.join_all();
+    } catch (std::exception& e)
     {
         std::cerr << "Exception: " << e.what() << "\n";
     }
