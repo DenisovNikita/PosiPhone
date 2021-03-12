@@ -1,3 +1,9 @@
+*.txt
+*.cbp
+*.cmake
+*.json
+*.idea/
+
 # Prerequisites
 *.d
 
