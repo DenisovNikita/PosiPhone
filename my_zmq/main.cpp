@@ -11,7 +11,7 @@ int main()
     sock_send.bind(address);
     sock_recv.connect(address);
 
-    sock_send.send(zmq::str_buffer("Hello, world"), zmq::send_flags::dontwait);
+    sock_send.send(zmq::str_buffer("Hello, world"), zmq::send_flags::none);
 
     zmq::message_t msg;
     sock_recv.recv(msg, zmq::recv_flags::none);
