@@ -1,3 +1,0 @@
-[submodule "test_websocket/test/socket.io-client-cpp"]
-	path = test_websocket/test/socket.io-client-cpp
-	url = https://github.com/socketio/socket.io-client-cpp.git
