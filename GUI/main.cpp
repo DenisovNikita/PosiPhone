@@ -1,23 +1,13 @@
-#include "model.h"
-
 #include <QApplication>
+#include "model.h"
 
 int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
-
-    model scene;
-
-    QGraphicsView view(&scene);
-    view.setRenderHint(QPainter::Antialiasing);
-    view.setCacheMode(QGraphicsView::CacheBackground);
-    view.setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
-    view.setOptimizationFlags(QGraphicsView::DontSavePainterState);
-    view.setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    view.setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-
-    view.setFixedSize(600, 600);
-    view.show();
-//    qDebug() << view.mapToScene(view.viewport()->geometry()).boundingRect();
-
+//    button test("sound");
+//    test.play("sample.wav");
+//    test.play("sample1.wav");
+//    test.record();
+//    QTimer::singleShot(5000, &test, &button::stop);
+    Model scene;
     return app.exec();
 }

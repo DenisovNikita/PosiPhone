@@ -2,14 +2,15 @@
 #define MESSAGE_H
 
 struct Message {
+    enum class Message_type { Create, Destroy, Add, Move, Audio } type;
     const int x;
     const int y;
     const int id;
     const int room_id;
     // AudioFile<float> data;
 
-    Message(int x_, int y_, int id_, int room_id/*, AudioFile<float> data_*/)
-        : x(x_), y(y_), id(id_), room_id(room_id)/*, data(std::move(data_))*/ {};
+    Message(int x, int y, int id, int room_id /*, AudioFile<float> data_*/)
+        : x(x), y(y), id(id), room_id(room_id) /*, data(std::move(data_))*/ {};
 };
 
-#endif // MESSAGE_H
+#endif  // MESSAGE_H

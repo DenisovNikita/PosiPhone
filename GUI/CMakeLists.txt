@@ -15,15 +15,11 @@ find_package(Qt5 COMPONENTS Widgets Multimedia REQUIRED)
 
 set(PROJECT_SOURCES
         main.cpp
-        gui.h
+        audio.cpp
         message.h
-        model.h
-        moveitem.h
-        gui.cpp
         model.cpp
         moveitem.cpp
-        queueconsumer.h
-)
+        queueconsumer.cpp)
 
 set(PROJECT_LIBS
         folly
@@ -34,8 +30,7 @@ set(PROJECT_LIBS
         event
         fmt
         double-conversion
-        iberty
-)
+        iberty)
 
 add_executable(GUI ${PROJECT_SOURCES})
 target_link_libraries(GUI PRIVATE Qt5::Widgets Qt5::Multimedia ${PROJECT_LIBS})

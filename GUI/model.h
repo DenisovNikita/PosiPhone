@@ -1,25 +1,39 @@
 #ifndef MODEL_H
 #define MODEL_H
 
-#include "queueconsumer.h"
-
+#include <QDebug>
 #include <QGraphicsItem>
 #include <QGraphicsScene>
 #include <QGraphicsView>
-#include <QGraphicsSceneMouseEvent>
-#include <QPainter>
-#include <QDebug>
+#include <QGridLayout>
+#include <QPushButton>
+#include <QToolBar>
+#include <cstddef>
+#include <memory>
+#include <thread>
+#include <unordered_map>
+#include "audio.h"
+#include "queueconsumer.h"
 
-#include <QAudioInput>
-#include <QAudioOutput>
-#include <QFile>
+class Model {
+    QWidget *main;
 
-class model : public QGraphicsScene {
+    std::size_t ID;
+    QGraphicsScene *scene;
+    QGraphicsView *view;
+    std::unordered_map<std::size_t, std::unique_ptr<MoveItem>> items;
+
+    Recorder *recorder;
+    Player *player;
+
     folly::EventBase *eventBase;
     QueueConsumer consumer;
 
 public:
-    model();
+    Model();
+    void addItem(std::size_t id, std::unique_ptr<MoveItem> ptr);
+    void removeItem(std::size_t id);
+    void setPos(std::size_t id, const QPointF &pos);
 };
 
-#endif // MODEL_H
+#endif  // MODEL_H

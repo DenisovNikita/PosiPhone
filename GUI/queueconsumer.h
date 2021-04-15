@@ -1,26 +1,23 @@
 #ifndef QUEUECONSUMER_H
 #define QUEUECONSUMER_H
 
-#include "message.h"
-#include "moveitem.h"
 #include <folly/io/async/NotificationQueue.h>
+#include <QGraphicsScene>
+#include <cstdlib>
+#include <memory>
+#include "message.h"
+#include "model_fwd.h"
+#include "moveitem.h"
 
 class QueueConsumer : public folly::NotificationQueue<Message>::Consumer {
+    Model *model;
     folly::EventBase eventBase;
     folly::NotificationQueue<Message> queue;
-    std::vector<MoveItem> items;
+
 public:
-    QueueConsumer() {
-        startConsuming(&eventBase, &queue);
-//        eventBase.loopForever();
-    }
-    void messageAvailable(Message &&value) noexcept override {
-        items[value.id].setPos(value.x, value.y);
-    }
-    ~QueueConsumer() {
-        stopConsuming();
-        eventBase.terminateLoopSoon();
-    }
+    explicit QueueConsumer(Model *model);
+    void messageAvailable(Message &&msg) noexcept override;
+    ~QueueConsumer() override;
 };
 
-#endif // QUEUECONSUMER_H
+#endif  // QUEUECONSUMER_H

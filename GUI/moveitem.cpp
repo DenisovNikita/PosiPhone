@@ -13,11 +13,11 @@ QPainterPath MoveItem::shape() const {
 void MoveItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) {
     painter->setPen(Qt::black);
     painter->drawEllipse(-RADIUS, -RADIUS, DIAMETER, DIAMETER);
-    Q_UNUSED(option);
-    Q_UNUSED(widget);
+    Q_UNUSED(option)
+    Q_UNUSED(widget)
 }
 
-MyCircle::MyCircle(const QPoint &pos) : MoveItem() {
+MyCircle::MyCircle(const QPointF &pos) : MoveItem() {
     setPos(pos);
     // TODO: push creating of my circle
 }
@@ -49,29 +49,25 @@ void MyCircle::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
 
 void MyCircle::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     this->setCursor(QCursor(Qt::ClosedHandCursor));
-    Q_UNUSED(event);
+    Q_UNUSED(event)
 }
 
 void MyCircle::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
     this->setCursor(QCursor(Qt::ArrowCursor));
-    Q_UNUSED(event);
+    Q_UNUSED(event)
 }
 
 void MyCircle::setPos(const QPointF& pos) {
     this->QGraphicsItem::setPos(pos);
-//    qDebug() << pos;
-    // TODO: push to queue
+    qDebug() << "cur pos: " << pos;
+    // TODO: push to move
 }
 
-OtherCircle::OtherCircle(const QPoint &pos) : MoveItem() {
-    setPos(pos);
+OtherCircle::OtherCircle(int x, int y) : MoveItem() {
+    setPos(QPoint(x, y));
 }
 
 void OtherCircle::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) {
     painter->setBrush(Qt::red);
     MoveItem::paint(painter, option, widget);
-}
-
-void OtherCircle::setPos(const QPointF&) {
-    // TODO: pull from queue
 }
