@@ -1,13 +1,18 @@
 #include <QApplication>
+#include "mock.h"
 #include "model.h"
+#include "view.h"
 
 int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
-//    button test("sound");
+//    Player test;
 //    test.play("sample.wav");
-//    test.play("sample1.wav");
 //    test.record();
-//    QTimer::singleShot(5000, &test, &button::stop);
-    Model scene;
+//    QTimer::singleShot(5000, &test, &Recorder::stop);
+    View view;
+    Model model(&view);
+    Mock mock(&model);
+
+    view.show();
     return app.exec();
 }

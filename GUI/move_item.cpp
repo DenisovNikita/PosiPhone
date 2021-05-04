@@ -1,4 +1,4 @@
-#include "moveitem.h"
+#include "move_item.h"
 
 QRectF MoveItem::boundingRect() const {
     return QRectF(-RADIUS, -RADIUS, DIAMETER, DIAMETER);
@@ -10,7 +10,9 @@ QPainterPath MoveItem::shape() const {
     return path;
 }
 
-void MoveItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) {
+void MoveItem::paint(QPainter *painter,
+                     const QStyleOptionGraphicsItem *option,
+                     QWidget *widget) {
     painter->setPen(Qt::black);
     painter->drawEllipse(-RADIUS, -RADIUS, DIAMETER, DIAMETER);
     Q_UNUSED(option)
@@ -19,14 +21,16 @@ void MoveItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, 
 
 MyCircle::MyCircle(const QPointF &pos) : MoveItem() {
     setPos(pos);
-    // TODO: push creating of my circle
+    // TODO: push creating
 }
 
 MyCircle::~MyCircle() {
-    // TODO: push deleting of my circle
+    // TODO: push deleting
 }
 
-void MyCircle::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) {
+void MyCircle::paint(QPainter *painter,
+                     const QStyleOptionGraphicsItem *option,
+                     QWidget *widget) {
     painter->setBrush(Qt::green);
     MoveItem::paint(painter, option, widget);
 }
@@ -38,36 +42,38 @@ void MyCircle::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
     pos.setY(std::max(scene()->sceneRect().topLeft().y() + RADIUS + DELTA,
              std::min(pos.y(), scene()->sceneRect().bottomRight().y() - RADIUS - DELTA)));
     bool ok = true;
-    for(auto& i : scene()->items()) {
+    for (auto i : scene()->items()) {
         if (this == i) continue;
-        qreal dist = (pos.x() - i->x()) * (pos.x() - i->x())
-                   + (pos.y() - i->y()) * (pos.y() - i->y());
-        if (dist <= DIAMETER * DIAMETER) ok = false;
+        qreal dist = (pos.x() - i->x()) * (pos.x() - i->x()) +
+                     (pos.y() - i->y()) * (pos.y() - i->y());
+        ok &= dist > DIAMETER * DIAMETER;
     }
-    if (ok) this->setPos(pos);
+    if (ok) setPos(pos);
 }
 
 void MyCircle::mousePressEvent(QGraphicsSceneMouseEvent *event) {
-    this->setCursor(QCursor(Qt::ClosedHandCursor));
+    setCursor(QCursor(Qt::ClosedHandCursor));
     Q_UNUSED(event)
 }
 
 void MyCircle::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
-    this->setCursor(QCursor(Qt::ArrowCursor));
+    setCursor(QCursor(Qt::ArrowCursor));
     Q_UNUSED(event)
 }
 
-void MyCircle::setPos(const QPointF& pos) {
-    this->QGraphicsItem::setPos(pos);
-    qDebug() << "cur pos: " << pos;
-    // TODO: push to move
+void MyCircle::setPos(const QPointF &pos) {
+    QGraphicsItem::setPos(pos);
+    qDebug() << "My Circle:" << pos;
+    // TODO: push moving
 }
 
-OtherCircle::OtherCircle(int x, int y) : MoveItem() {
-    setPos(QPoint(x, y));
+OtherCircle::OtherCircle(const QPointF &pos) : MoveItem() {
+    setPos(pos);
 }
 
-void OtherCircle::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) {
+void OtherCircle::paint(QPainter *painter,
+                        const QStyleOptionGraphicsItem *option,
+                        QWidget *widget) {
     painter->setBrush(Qt::red);
     MoveItem::paint(painter, option, widget);
 }

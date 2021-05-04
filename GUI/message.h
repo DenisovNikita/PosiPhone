@@ -9,8 +9,8 @@ struct Message {
     const int room_id;
     // AudioFile<float> data;
 
-    Message(int x, int y, int id, int room_id /*, AudioFile<float> data_*/)
-        : x(x), y(y), id(id), room_id(room_id) /*, data(std::move(data_))*/ {};
+    Message(Message_type type, int x, int y, int id, int room_id /*, AudioFile<float> data_*/)
+        : type(type), x(x), y(y), id(id), room_id(room_id) /*, data(std::move(data_))*/ {};
 };
 
 #endif  // MESSAGE_H

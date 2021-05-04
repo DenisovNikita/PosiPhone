@@ -1,18 +1,15 @@
-#ifndef MOVEITEM_H
-#define MOVEITEM_H
+#ifndef MOVE_ITEM_H
+#define MOVE_ITEM_H
 
+#include <QDebug>
 #include <QGraphicsItem>
 #include <QGraphicsScene>
 #include <QGraphicsSceneMouseEvent>
 #include <QGraphicsView>
 #include <QPainter>
-#include <QDebug>
 
 class MoveItem : public QGraphicsItem {
     Q_INTERFACES(QGraphicsItem)
-
-public:
-    ~MoveItem() override = default;
 
 protected:
     const int RADIUS = 30, DIAMETER = 2 * RADIUS, DELTA = 3;
@@ -25,7 +22,7 @@ protected:
 
 class MyCircle : public MoveItem {
 public:
-    explicit MyCircle(const QPointF &);
+    explicit MyCircle(const QPointF &pos);
     ~MyCircle() override;
 
 private:
@@ -35,13 +32,12 @@ private:
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
     void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
-    void setPos(const QPointF &);
+    void setPos(const QPointF &pos);
 };
 
 class OtherCircle : public MoveItem {
 public:
-    explicit OtherCircle(int x, int y);
-    ~OtherCircle() override = default;
+    explicit OtherCircle(const QPointF &pos);
 
 private:
     void paint(QPainter *painter,
@@ -49,4 +45,4 @@ private:
                QWidget *widget) override;
 };
 
-#endif  // MOVEITEM_H
+#endif  // MOVE_ITEM_H

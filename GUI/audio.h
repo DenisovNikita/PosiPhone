@@ -1,8 +1,6 @@
 #ifndef BUTTON_H
 #define BUTTON_H
 
-#include <QAudioInput>
-#include <QAudioOutput>
 #include <QAudioRecorder>
 #include <QDebug>
 #include <QDir>
@@ -13,6 +11,7 @@
 #include <QPushButton>
 #include <QTimer>
 #include <QUrl>
+#include <memory>
 #include <string>
 
 class Audio : public QPushButton {
@@ -25,26 +24,23 @@ class Audio : public QPushButton {
 
 protected:
     explicit Audio(const std::string &name);
-    ~Audio() override = default;
 };
 
 class Player : public Audio {
-    QMediaPlayer *player;
+    std::unique_ptr<QMediaPlayer> player;
     void play(const std::string &filename);
 
 public:
     Player();
-    ~Player() override;
 };
 
 class Recorder : public Audio {
-    QAudioRecorder *recorder;
+    std::unique_ptr<QAudioRecorder> recorder;
     void record();
     void stop();
 
 public:
     Recorder();
-    ~Recorder() override;
 };
 
 #endif  // BUTTON_H
