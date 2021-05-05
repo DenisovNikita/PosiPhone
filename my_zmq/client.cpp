@@ -63,7 +63,7 @@ int main ()
 
     zmq::socket_t socket (context, ZMQ_REQ);
 
-    cout << "Connecting to hello world server…" << "\n";
+    cout << "Connecting to server..." << "\n";
     socket.connect (serverName);
 
     Message m;
@@ -76,6 +76,11 @@ int main ()
         return receive(socket);
     };
 
+    // to initialize yourself on server
+    m.to = "Server";
+    m.message = "init";
+    send_and_receive();
+
     while(true) {
         cout << "> ";
         string command;
@@ -84,7 +89,7 @@ int main ()
             cout << "Send message:              [send] [to] [message]\n";
             cout << "View next message in chat: [get]\n";
             cout << "View participants:         [list]\n";
-            continue;
+            cout << "Exit:                      [exit]\n";
         } else if (command == "send") {
             cin >> m.to >> m.message;
             auto result = send_and_receive();
@@ -94,10 +99,7 @@ int main ()
             m.to = "Server";
             m.message = "get";
             auto result = send_and_receive();
-            if(result.from != "Server") {
-                cout << result.from << ": "
-                     << result.message << "\n";
-            }
+            cout << result.from << ": " << result.message << "\n";
         } else if (command == "list") {
             m.to = "Server";
             m.message = "list";
@@ -105,6 +107,11 @@ int main ()
             assert(result.from == "Server");
             cout << "Participants, who send something\n";
             cout << result.message;
+        } else if (command == "exit") {
+            m.to = "Server";
+            m.message = "kill_me";
+            send_and_receive();
+            break;
         } else {
             assert(false);
         }

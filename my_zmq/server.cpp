@@ -50,15 +50,15 @@ int main() {
             boost::archive::text_iarchive deserializer(inputStream);
             deserializer >> requestMessage;
 
-            participants.insert(requestMessage.from);
-
             Message responseMessage;
             responseMessage.from = "Server";
             responseMessage.to = requestMessage.from;
             responseMessage.message = "OK";
 
             if (requestMessage.to == "Server") {
-                if (requestMessage.message == "get") {
+                if (requestMessage.message == "init") {
+                    participants.insert(requestMessage.from);
+                } else if (requestMessage.message == "get") {
                     auto it = find_if(queue.begin(), queue.end(),
                                       [&](Message &m) {
                                           return m.to == requestMessage.from;
@@ -67,12 +67,16 @@ int main() {
                     if (it != queue.end()) {
                         responseMessage = *it;
                         queue.erase(it);
+                    } else {
+                        responseMessage.message = "No new messages";
                     }
                 } else if (requestMessage.message == "list") {
                     responseMessage.message.clear();
                     for (const auto &p : participants) {
                         responseMessage.message += p + "\n";
                     }
+                } else if (requestMessage.message == "kill_me") {
+                    participants.erase(requestMessage.from);
                 } else {
                     assert(false);
                 }
