@@ -7,8 +7,10 @@ find_package(Boost 1.55 REQUIRED system serialization)
 set(CMAKE_CXX_STANDARD 17)
 
 add_executable(single_message main.cpp)
-add_executable(server server.cpp)
-add_executable(client client.cpp)
+add_executable(server src/server.cpp src/my_utils.cpp)
+add_executable(client src/client.cpp src/my_utils.cpp)
+
+include_directories(include)
 
 target_link_libraries(single_message cppzmq)
 target_link_libraries(server cppzmq)
