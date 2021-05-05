@@ -1,39 +1,26 @@
 #ifndef MODEL_H
 #define MODEL_H
 
-#include <QDebug>
-#include <QGraphicsItem>
-#include <QGraphicsScene>
-#include <QGraphicsView>
-#include <QGridLayout>
-#include <QPushButton>
-#include <QToolBar>
-#include <cstddef>
+#include <folly/io/async/NotificationQueue.h>
+#include <folly/io/async/ScopedEventBaseThread.h>
+#include <cstdlib>
 #include <memory>
-#include <thread>
-#include <unordered_map>
-#include "audio.h"
-#include "queueconsumer.h"
+#include "message.h"
+#include "model_fwd.h"
+#include "move_item.h"
+#include "view_fwd.h"
 
-class Model {
-    QWidget *main;
-
+class Model : public folly::NotificationQueue<Message>::Consumer {
     std::size_t ID;
-    QGraphicsScene *scene;
-    QGraphicsView *view;
-    std::unordered_map<std::size_t, std::unique_ptr<MoveItem>> items;
-
-    Recorder *recorder;
-    Player *player;
-
-    folly::EventBase *eventBase;
-    QueueConsumer consumer;
+    View *view;
+    folly::ScopedEventBaseThread th;
+    const uint32_t maxQueueSize = 10'000;
+    folly::NotificationQueue<Message> queue;
 
 public:
-    Model();
-    void addItem(std::size_t id, std::unique_ptr<MoveItem> ptr);
-    void removeItem(std::size_t id);
-    void setPos(std::size_t id, const QPointF &pos);
+    explicit Model(View *view);
+    void messageAvailable(Message &&msg) noexcept override;
+    ~Model() override;
 };
 
 #endif  // MODEL_H

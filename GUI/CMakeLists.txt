@@ -17,9 +17,10 @@ set(PROJECT_SOURCES
         main.cpp
         audio.cpp
         message.h
+        mock.cpp
         model.cpp
-        moveitem.cpp
-        queueconsumer.cpp)
+        move_item.cpp
+        view.cpp)
 
 set(PROJECT_LIBS
         folly
