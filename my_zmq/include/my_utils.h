@@ -16,6 +16,8 @@ struct Message {
     }
 };
 
+static const int TIME_SLEEP = 50;
+
 void send(zmq::socket_t & socket, const Message &message);
 
 Message receive(zmq::socket_t &socket);

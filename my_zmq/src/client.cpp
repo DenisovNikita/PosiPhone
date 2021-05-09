@@ -17,18 +17,16 @@ using std::string;
 using std::stringstream;
 using std::cout, std::cin;
 
-int main ()
-{
-    auto serverName = "tcp://localhost:5555";
-    zmq::context_t context (1);
-    zmq::socket_t socket (context, ZMQ_REQ);
+int main() {
+    auto server_name = "tcp://localhost:5555";
+    zmq::context_t context(1);
+    zmq::socket_t socket(context, ZMQ_REQ);
     cout << "Connecting to server..." << "\n";
-    socket.connect (serverName);
+    socket.connect(server_name);
     Message m;
     cout << "name: ";
     cin >> m.from;
     auto send_and_receive = [&]() {
-        static const int TIME_SLEEP = 50;
         send(socket, m);
         std::this_thread::sleep_for(std::chrono::milliseconds(TIME_SLEEP));
         return receive(socket);
@@ -39,24 +37,40 @@ int main ()
     m.message = "init";
     send_and_receive();
 
+    auto pooler = [&](const string &user_name){
+        Message poolRequest;
+        poolRequest.from = user_name;
+        poolRequest.to = "Server";
+        poolRequest.message = "get";
+
+        zmq::socket_t socket(context, ZMQ_REQ);
+        socket.connect(server_name);
+
+        while (true) {
+            std::this_thread::sleep_for(
+                    std::chrono::milliseconds(TIME_SLEEP));
+            send(socket, poolRequest);
+            auto result = receive(socket);
+            if (result.from != "Server") {
+                cout << "\n" << result.from << ": " << result.message << "\n> ";
+            }
+        }
+    };
+
+    std::thread t(pooler, m.from);
+
     while(true) {
         cout << "> ";
         string command;
         cin >> command;
         if (command == "help") {
             cout << "Send message:              [send] [to] [message]\n";
-            cout << "View next message in chat: [get]\n";
             cout << "View participants:         [list]\n";
             cout << "Exit:                      [exit]\n";
         } else if (command == "send") {
             cin >> m.to >> m.message;
             auto result = send_and_receive();
             assert(result.message == "OK");
-        } else if (command == "get") {
-            m.to = "Server";
-            m.message = "get";
-            auto result = send_and_receive();
-            cout << result.from << ": " << result.message << "\n";
         } else if (command == "list") {
             m.to = "Server";
             m.message = "list";
