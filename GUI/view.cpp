@@ -1,4 +1,5 @@
 #include "view.h"
+#include <iostream>
 
 View::View(QWidget *parent)
     : QWidget(parent),
@@ -31,19 +32,23 @@ View::View(QWidget *parent)
     setFixedSize(this->sizeHint());
 }
 
-void View::addItem(int64_t id, std::unique_ptr<MoveItem> item) {
-    qDebug() << "create circle at " << item->pos();
-    items[id] = std::move(item);
-    scene->addItem(items[id].get());
+void View::add_item(const User &user, int type) {
+    if (type == 0) {
+        items[user.id()] = std::make_unique<MyCircle>(user);
+    } else if (type == 1) {
+        items[user.id()] = std::make_unique<OtherCircle>(user);
+    } else {
+        std::cerr << "Trying to create circle of unknown type";
+        return;
+    }
+    scene->addItem(items[user.id()].get());
 }
 
-void View::removeItem(std::int64_t id) {
+void View::remove_item(std::int64_t id) {
     scene->removeItem(items[id].get());
     items.erase(items.find(id));
-    qDebug() << "destroy circle with number" << id;
 }
 
-void View::setPos(std::int64_t id, const QPointF &pos) {
+void View::set_pos(std::int64_t id, const QPointF &pos) {
     items[id]->setPos(pos);
-    qDebug() << "Other Circle:" << pos;
 }

@@ -6,6 +6,7 @@
 #include <QGridLayout>
 #include <QToolBar>
 #include <cstdint>
+#include <iosfwd>
 #include <memory>
 #include <unordered_map>
 #include "audio.h"
@@ -23,10 +24,10 @@ class View : public QWidget {
 
 public:
     explicit View(QWidget *parent = nullptr);
-    void addItem(std::int64_t id, std::unique_ptr<MoveItem> item);
 public slots:
-    void removeItem(std::int64_t id);
-    void setPos(std::int64_t id, const QPointF &pos);
+    void add_item(const User &user, int type);
+    void remove_item(std::int64_t id);
+    void set_pos(std::int64_t id, const QPointF &pos);
 };
 
 #endif  // VIEW_H

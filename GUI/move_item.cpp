@@ -25,10 +25,12 @@ MoveItem::MoveItem(const User &user) : QGraphicsItem(), name(user.name()) {
 
 MyCircle::MyCircle(const User &user) : MoveItem(user) {
     setPos(QPointF(user.x(), user.y()));
+    qDebug() << "create my circle in" << pos();
     // TODO: push creating
 }
 
 MyCircle::~MyCircle() {
+    qDebug() << "destroy my circle in" << pos();
     // TODO: push deleting
 }
 
@@ -40,7 +42,7 @@ void MyCircle::paint(QPainter *painter,
 }
 
 void MyCircle::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
-    QPointF pos = event->scenePos();
+    /*QPointF pos = event->scenePos();
     pos.setX(std::max(scene()->sceneRect().topLeft().x() + RADIUS + DELTA,
              std::min(pos.x(), scene()->sceneRect().bottomRight().x() - RADIUS - DELTA)));
     pos.setY(std::max(scene()->sceneRect().topLeft().y() + RADIUS + DELTA,
@@ -51,8 +53,8 @@ void MyCircle::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
         qreal dist = (pos.x() - i->x()) * (pos.x() - i->x()) +
                      (pos.y() - i->y()) * (pos.y() - i->y());
         ok &= dist > DIAMETER * DIAMETER;
-    }
-    if (ok) setPos(pos);
+    }*/
+    setPos(event->scenePos());
 }
 
 void MyCircle::mousePressEvent(QGraphicsSceneMouseEvent *event) {

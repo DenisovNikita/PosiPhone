@@ -3,10 +3,9 @@
 
 #include <folly/io/async/NotificationQueue.h>
 #include <folly/io/async/ScopedEventBaseThread.h>
-#include <QMetaType>
 #include <QObject>
 #include <cstdint>
-#include <iostream>
+#include <iosfwd>
 #include <memory>
 #include <unordered_map>
 #include "message.h"
@@ -19,19 +18,18 @@ class Model : public QObject,
               public folly::NotificationQueue<Message>::Consumer {
     Q_OBJECT
     std::int64_t ID;
-    View *view;
     folly::ScopedEventBaseThread th;
     const uint32_t maxQueueSize = 10'000;
     folly::NotificationQueue<Message> queue;
     std::unordered_map<std::int64_t, std::unique_ptr<User>> users;
+
     void connect(View *view) const;
-    void add_my_circle(std::int64_t id, const QPointF &pos);
-    void add_other_circle(std::int64_t id, const QPointF &pos);
+    void add_item(std::int64_t id, const QPointF &pos, int type);
     void remove_item(std::int64_t id);
     void set_pos(std::int64_t id, const QPointF &pos);
 
 signals:
-//    void add_item_signal(std::int64_t id, std::unique_ptr<MoveItem> item);
+    void add_item_signal(const User &user, int type);
     void remove_item_signal(std::int64_t id);
     void set_pos_signal(std::int64_t id, const QPointF &pos);
 
