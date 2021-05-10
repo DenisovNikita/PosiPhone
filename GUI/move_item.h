@@ -7,11 +7,16 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QGraphicsView>
 #include <QPainter>
+#include <string>
+#include "user.h"
 
 class MoveItem : public QGraphicsItem {
     Q_INTERFACES(QGraphicsItem)
+public:
+    explicit MoveItem(const User &user);
 
 protected:
+    std::string name;
     const int RADIUS = 30, DIAMETER = 2 * RADIUS, DELTA = 3;
     [[nodiscard]] QRectF boundingRect() const override;
     [[nodiscard]] QPainterPath shape() const override;
@@ -22,7 +27,7 @@ protected:
 
 class MyCircle : public MoveItem {
 public:
-    explicit MyCircle(const QPointF &pos);
+    explicit MyCircle(const User &user);
     ~MyCircle() override;
 
 private:
@@ -37,7 +42,7 @@ private:
 
 class OtherCircle : public MoveItem {
 public:
-    explicit OtherCircle(const QPointF &pos);
+    explicit OtherCircle(const User &user);
 
 private:
     void paint(QPainter *painter,

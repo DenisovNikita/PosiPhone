@@ -3,19 +3,35 @@
 
 #include <folly/io/async/NotificationQueue.h>
 #include <folly/io/async/ScopedEventBaseThread.h>
-#include <cstdlib>
+#include <QMetaType>
+#include <QObject>
+#include <cstdint>
+#include <iostream>
 #include <memory>
+#include <unordered_map>
 #include "message.h"
 #include "model_fwd.h"
 #include "move_item.h"
+#include "user.h"
 #include "view_fwd.h"
 
-class Model : public folly::NotificationQueue<Message>::Consumer {
-    std::size_t ID;
+Q_DECLARE_METATYPE(std::int64_t)
+
+class Model : public QObject,
+              public folly::NotificationQueue<Message>::Consumer {
+    Q_OBJECT
+    std::int64_t ID;
     View *view;
     folly::ScopedEventBaseThread th;
     const uint32_t maxQueueSize = 10'000;
     folly::NotificationQueue<Message> queue;
+    std::unordered_map<std::int64_t, std::unique_ptr<User>> users;
+    void connect(View *view) const;
+
+signals:
+//    void add_item_signal(std::int64_t id, std::unique_ptr<MoveItem> item);
+    void remove_item_signal(std::int64_t id);
+    void set_pos_signal(std::int64_t id, const QPointF &pos);
 
 public:
     explicit Model(View *view);

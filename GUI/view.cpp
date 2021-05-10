@@ -31,18 +31,18 @@ View::View(QWidget *parent)
     setFixedSize(this->sizeHint());
 }
 
-void View::addItem(std::size_t id, std::unique_ptr<MoveItem> item) {
+void View::addItem(int64_t id, std::unique_ptr<MoveItem> item) {
     qDebug() << "create circle at " << item->pos();
     items[id] = std::move(item);
     scene->addItem(items[id].get());
 }
 
-void View::removeItem(std::size_t id) {
+void View::removeItem(std::int64_t id) {
     scene->removeItem(items[id].get());
     items.erase(items.find(id));
 }
 
-void View::setPos(std::size_t id, const QPointF &pos) {
+void View::setPos(std::int64_t id, const QPointF &pos) {
     items[id]->setPos(pos);
     qDebug() << "Other Circle:" << pos;
 }

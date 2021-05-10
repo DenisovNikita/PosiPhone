@@ -1,5 +1,5 @@
-#ifndef GUI_MOCK_H
-#define GUI_MOCK_H
+#ifndef MOCK_H
+#define MOCK_H
 
 #include <folly/io/async/ScopedEventBaseThread.h>
 #include <memory>
@@ -8,12 +8,13 @@
 
 class Mock {
     Model *model;
-    folly::ScopedEventBaseThread th;
+    folly::ScopedEventBaseThread t1, t2;
+    const int N1 = 150, N2 = 75, TIME = 10, D = 25;
 
-    void send_message(Message::Message_type type, int x, int y, int id);
+    void send_message(const Message &msg);
 
 public:
     explicit Mock(Model *model);
 };
 
-#endif  // GUI_MOCK_H
+#endif  // MOCK_H

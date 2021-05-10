@@ -15,12 +15,16 @@ void MoveItem::paint(QPainter *painter,
                      QWidget *widget) {
     painter->setPen(Qt::black);
     painter->drawEllipse(-RADIUS, -RADIUS, DIAMETER, DIAMETER);
+    painter->drawText(boundingRect(), Qt::AlignCenter, name.c_str());
     Q_UNUSED(option)
     Q_UNUSED(widget)
 }
 
-MyCircle::MyCircle(const QPointF &pos) : MoveItem() {
-    setPos(pos);
+MoveItem::MoveItem(const User &user) : QGraphicsItem(), name(user.name()) {
+}
+
+MyCircle::MyCircle(const User &user) : MoveItem(user) {
+    setPos(QPointF(user.x(), user.y()));
     // TODO: push creating
 }
 
@@ -67,8 +71,8 @@ void MyCircle::setPos(const QPointF &pos) {
     // TODO: push moving
 }
 
-OtherCircle::OtherCircle(const QPointF &pos) : MoveItem() {
-    setPos(pos);
+OtherCircle::OtherCircle(const User &user) : MoveItem(user) {
+    setPos(QPointF(user.x(), user.y()));
 }
 
 void OtherCircle::paint(QPainter *painter,

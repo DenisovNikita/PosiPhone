@@ -9,7 +9,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 
-add_definitions(-DQT_NO_KEYWORDS)
+add_definitions(-DQT_NO_FOREACH)
 
 find_package(Qt5 COMPONENTS Widgets Multimedia REQUIRED)
 
@@ -20,7 +20,8 @@ set(PROJECT_SOURCES
         mock.cpp
         model.cpp
         move_item.cpp
-        view.cpp)
+        view.cpp
+        user.cpp)
 
 set(PROJECT_LIBS
         folly
