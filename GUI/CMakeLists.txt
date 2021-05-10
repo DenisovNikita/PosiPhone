@@ -20,6 +20,7 @@ set(PROJECT_SOURCES
         mock.cpp
         model.cpp
         move_item.cpp
+        producer.cpp
         view.cpp
         user.cpp)
 

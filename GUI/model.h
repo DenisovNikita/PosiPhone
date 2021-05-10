@@ -19,7 +19,7 @@ class Model : public QObject,
     Q_OBJECT
     std::int64_t ID;
     folly::ScopedEventBaseThread th;
-    const uint32_t maxQueueSize = 10'000;
+    const uint32_t maxSize = 10'000;
     folly::NotificationQueue<Message> queue;
     std::unordered_map<std::int64_t, std::unique_ptr<User>> users;
 
@@ -36,6 +36,7 @@ signals:
 public:
     explicit Model(View *view);
     void messageAvailable(Message &&msg) noexcept override;
+    folly::NotificationQueue<Message> *getCurrentQueue();
     ~Model() override;
 };
 

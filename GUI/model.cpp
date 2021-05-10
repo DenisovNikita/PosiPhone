@@ -5,9 +5,10 @@
 Model::Model(View *view)
     : ID(0),  // TODO: get id by network
       th("model"),
-      queue(maxQueueSize) {
+      queue(maxSize) {
     qRegisterMetaType<std::int64_t>("std::int64_t");
     qRegisterMetaType<User>("User");
+    view->set_model(this);
     connect(view);
     add_item(ID, QPointF(0, 0), 0);
     auto *eventBase = th.getEventBase();
@@ -34,6 +35,10 @@ void Model::messageAvailable(Message &&msg) noexcept {
 
 Model::~Model() {
     th.getEventBase()->runInEventBaseThread([this]() { stopConsuming(); });
+}
+
+folly::NotificationQueue<Message> *Model::getCurrentQueue() {
+    return &queue;
 }
 
 void Model::connect(View *view) const {

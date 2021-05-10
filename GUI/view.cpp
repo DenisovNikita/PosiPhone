@@ -32,9 +32,13 @@ View::View(QWidget *parent)
     setFixedSize(this->sizeHint());
 }
 
+void View::set_model(Model *model_) {
+    model = model_;
+}
+
 void View::add_item(const User &user, int type) {
     if (type == 0) {
-        items[user.id()] = std::make_unique<MyCircle>(user);
+        items[user.id()] = std::make_unique<MyCircle>(user, model);
     } else if (type == 1) {
         items[user.id()] = std::make_unique<OtherCircle>(user);
     } else {
@@ -50,5 +54,5 @@ void View::remove_item(std::int64_t id) {
 }
 
 void View::set_pos(std::int64_t id, const QPointF &pos) {
-    items[id]->setPos(pos);
+    items[id]->set_pos(pos);
 }
