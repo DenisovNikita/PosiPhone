@@ -15,8 +15,6 @@
 #include "user.h"
 #include "view_fwd.h"
 
-Q_DECLARE_METATYPE(std::int64_t)
-
 class Model : public QObject,
               public folly::NotificationQueue<Message>::Consumer {
     Q_OBJECT
@@ -27,6 +25,10 @@ class Model : public QObject,
     folly::NotificationQueue<Message> queue;
     std::unordered_map<std::int64_t, std::unique_ptr<User>> users;
     void connect(View *view) const;
+    void add_my_circle(std::int64_t id, const QPointF &pos);
+    void add_other_circle(std::int64_t id, const QPointF &pos);
+    void remove_item(std::int64_t id);
+    void set_pos(std::int64_t id, const QPointF &pos);
 
 signals:
 //    void add_item_signal(std::int64_t id, std::unique_ptr<MoveItem> item);
