@@ -1,22 +1,14 @@
 #include "user.h"
 
-User::User() : id_(), pos_() {
+User::User() : id_(), x_(), y_() {
 }
 
-User::User(std::int64_t id, std::string name, const QPointF &pos)
-    : id_(id), name_(std::move(name)), pos_(pos) {
+User::User(std::int64_t id, std::string name, double x, double y)
+    : id_(id), name_(std::move(name)), x_(x), y_(y) {
 }
 
-User::User(std::int64_t id, std::string name, qreal x, qreal y)
-    : id_(id), name_(std::move(name)), pos_(x, y) {
-}
-
-[[maybe_unused]] void User::set_pos(const QPointF &pos) {
-    pos_ = pos;
-}
-
-[[maybe_unused]] void User::set_pos(qreal x, qreal y) {
-    pos_ = {x, y};
+[[maybe_unused]] void User::set_pos(double x, double y) {
+    x_ = x, x_ = y;
 }
 
 [[maybe_unused]] std::int64_t User::id() const {
@@ -27,14 +19,10 @@ std::string User::name() const {
     return name_;
 }
 
-[[maybe_unused]] QPointF User::pos() const {
-    return pos_;
+[[maybe_unused]] double User::x() const {
+    return x_;
 }
 
-[[maybe_unused]] qreal User::x() const {
-    return pos_.x();
-}
-
-[[maybe_unused]] qreal User::y() const {
-    return pos_.y();
+[[maybe_unused]] double User::y() const {
+    return y_;
 }
