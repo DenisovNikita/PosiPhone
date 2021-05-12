@@ -1,12 +1,13 @@
 #include "view.h"
 #include <iostream>
 
-View::View(QWidget *parent)
-    : QWidget(parent),
+View::View(Model *model)
+    : QWidget(),
+      model(model),
       scene(std::make_unique<QGraphicsScene>()),
       view(std::make_unique<QGraphicsView>()),
       player(std::make_unique<Player>()),
-      recorder(std::make_unique<Recorder>()) {  // TODO: where to spawn
+      recorder(std::make_unique<Recorder>()) {
     // some scene settings
     scene->setSceneRect(-300, -300, 600, 600);
     scene->setItemIndexMethod(QGraphicsScene::NoIndex);
@@ -32,17 +33,13 @@ View::View(QWidget *parent)
     setFixedSize(this->sizeHint());
 }
 
-void View::set_model(Model *model_) {
-    model = model_;
-}
-
 void View::add_item(const User &user, int type) {
     if (type == 0) {
         items[user.id()] = std::make_unique<MyCircle>(user, model);
     } else if (type == 1) {
         items[user.id()] = std::make_unique<OtherCircle>(user);
     } else {
-        std::cerr << "Trying to create circle of unknown type";
+        std::cerr << "Trying to create circle of unknown type\n";
         return;
     }
     scene->addItem(items[user.id()].get());
@@ -53,6 +50,6 @@ void View::remove_item(std::int64_t id) {
     items.erase(items.find(id));
 }
 
-void View::set_pos(std::int64_t id, const QPointF &pos) {
-    items[id]->set_pos(pos);
+void View::set_pos(std::int64_t id, double x, double y) {
+    items[id]->setPos(x, y);
 }

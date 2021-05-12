@@ -12,7 +12,6 @@
 #include "audio.h"
 #include "model_fwd.h"
 #include "move_item.h"
-#include "view_fwd.h"
 
 class View : public QWidget {
     Q_OBJECT
@@ -26,12 +25,12 @@ class View : public QWidget {
     std::unique_ptr<Recorder> recorder;
 
 public:
-    explicit View(QWidget *parent = nullptr);
-    void set_model(Model *model_);
+    explicit View(Model *model);
+
 public slots:
     void add_item(const User &user, int type);
     void remove_item(std::int64_t id);
-    void set_pos(std::int64_t id, const QPointF &pos);
+    void set_pos(std::int64_t id, double x, double y);
 };
 
 #endif  // VIEW_H

@@ -4,10 +4,6 @@ MoveItem::MoveItem(const User &user)
     : QGraphicsItem(), ID(user.id()), name(user.name()) {
 }
 
-void MoveItem::set_pos(const QPointF &pos) {
-    setPos(pos);
-}
-
 QRectF MoveItem::boundingRect() const {
     return QRectF(-RADIUS, -RADIUS, DIAMETER, DIAMETER);
 }
@@ -31,19 +27,6 @@ void MoveItem::paint(QPainter *painter,
 MyCircle::MyCircle(const User &user, Model *model)
     : MoveItem(user), producer(model) {
     setPos(QPointF(user.x(), user.y()));
-    qDebug() << "create my circle in" << pos();
-    // TODO: push creating
-}
-
-MyCircle::~MyCircle() {
-    qDebug() << "destroy my circle in" << pos();
-    // TODO: push deleting
-}
-
-void MyCircle::set_pos(const QPointF &pos) {
-    setPos(pos);
-    qDebug() << "My Circle:" << pos;
-    // TODO: push moving
 }
 
 void MyCircle::paint(QPainter *painter,
@@ -59,16 +42,8 @@ void MyCircle::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
              std::min(pos.x(), scene()->sceneRect().bottomRight().x() - RADIUS - DELTA)));
     pos.setY(std::max(scene()->sceneRect().topLeft().y() + RADIUS + DELTA,
              std::min(pos.y(), scene()->sceneRect().bottomRight().y() - RADIUS - DELTA)));
-    /*bool ok = true;
-    for (auto i : scene()->items()) {
-        if (this == i) continue;
-        qreal dist = (pos.x() - i->x()) * (pos.x() - i->x()) +
-                     (pos.y() - i->y()) * (pos.y() - i->y());
-        ok &= dist > DIAMETER * DIAMETER;
-    }*/
-//    set_pos(pos);
     producer.send_message(
-        Message(Message::Message_type::Move, pos.x(), pos.y(), ID));
+        Message(Message::Message_type::Move, ID, name, pos.x(), pos.y()));
 }
 
 void MyCircle::mousePressEvent(QGraphicsSceneMouseEvent *event) {

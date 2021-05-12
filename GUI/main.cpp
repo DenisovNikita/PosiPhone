@@ -1,7 +1,6 @@
 #include <QApplication>
 #include "mock.h"
 #include "model.h"
-#include "view.h"
 
 int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
@@ -9,10 +8,7 @@ int main(int argc, char *argv[]) {
 //    test.play("sample.wav");
 //    test.record();
 //    QTimer::singleShot(5000, &test, &Recorder::stop);
-    View view;
-    Model model(&view);
+    Model model;
     Mock mock(&model);
-
-    view.show();
-    return app.exec();
+    return QApplication::exec();
 }

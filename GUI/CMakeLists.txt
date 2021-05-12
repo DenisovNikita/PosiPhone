@@ -16,6 +16,7 @@ find_package(Qt5 COMPONENTS Widgets Multimedia REQUIRED)
 set(PROJECT_SOURCES
         main.cpp
         audio.cpp
+        login_widget.cpp
         message.h
         mock.cpp
         model.cpp
