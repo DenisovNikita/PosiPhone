@@ -2,30 +2,25 @@
 #include <iostream>
 
 View::View(Model *model)
-    : QWidget(),
-      model(model),
-      scene(std::make_unique<QGraphicsScene>()),
-      view(std::make_unique<QGraphicsView>()),
-      player(std::make_unique<Player>()),
-      recorder(std::make_unique<Recorder>()) {
+    : QWidget(), model(model), scene(), view(), player(), recorder() {
     // some scene settings
-    scene->setSceneRect(-300, -300, 600, 600);
-    scene->setItemIndexMethod(QGraphicsScene::NoIndex);
+    scene.setSceneRect(-300, -300, 600, 600);
+    scene.setItemIndexMethod(QGraphicsScene::NoIndex);
 
     // some view settings
-    view->setScene(scene.get());
-    view->setRenderHint(QPainter::Antialiasing);
-    view->setCacheMode(QGraphicsView::CacheBackground);
-    view->setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
-    view->setOptimizationFlags(QGraphicsView::DontSavePainterState);
-    view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    view.setScene(&scene);
+    view.setRenderHint(QPainter::Antialiasing);
+    view.setCacheMode(QGraphicsView::CacheBackground);
+    view.setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
+    view.setOptimizationFlags(QGraphicsView::DontSavePainterState);
+    view.setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    view.setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
     auto *gridLayout = new QGridLayout();
-    gridLayout->addWidget(view.get());
+    gridLayout->addWidget(&view);
     auto *buttons = new QToolBar();
-    buttons->addWidget(recorder.get());
-    buttons->addWidget(player.get());
+    buttons->addWidget(&recorder);
+    buttons->addWidget(&player);
     gridLayout->addWidget(buttons);
 
     setWindowTitle("PosiPhone");
@@ -33,7 +28,7 @@ View::View(Model *model)
     setFixedSize(this->sizeHint());
 }
 
-void View::add_item(const User &user, int type) {
+void View::add_item(const User &user, std::int64_t type) {
     if (type == 0) {
         items[user.id()] = std::make_unique<MyCircle>(user, model);
     } else if (type == 1) {
@@ -42,11 +37,11 @@ void View::add_item(const User &user, int type) {
         std::cerr << "Trying to create circle of unknown type\n";
         return;
     }
-    scene->addItem(items[user.id()].get());
+    scene.addItem(items[user.id()].get());
 }
 
 void View::remove_item(std::int64_t id) {
-    scene->removeItem(items[id].get());
+    scene.removeItem(items[id].get());
     items.erase(items.find(id));
 }
 

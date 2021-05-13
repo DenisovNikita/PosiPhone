@@ -17,18 +17,18 @@ class View : public QWidget {
     Q_OBJECT
     Model *model = nullptr;
 
-    std::unique_ptr<QGraphicsScene> scene;
-    std::unique_ptr<QGraphicsView> view;
+    QGraphicsScene scene;
+    QGraphicsView view;
     std::unordered_map<std::int64_t, std::unique_ptr<MoveItem>> items;
 
-    std::unique_ptr<Player> player;
-    std::unique_ptr<Recorder> recorder;
+    Player player;
+    Recorder recorder;
 
 public:
     explicit View(Model *model);
 
 public slots:
-    void add_item(const User &user, int type);
+    void add_item(const User &user, std::int64_t type);
     void remove_item(std::int64_t id);
     void set_pos(std::int64_t id, double x, double y);
 };
