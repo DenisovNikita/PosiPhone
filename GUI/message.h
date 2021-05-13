@@ -1,16 +1,22 @@
 #ifndef MESSAGE_H
 #define MESSAGE_H
 
-struct Message {
-    enum class Message_type { Create, Destroy, Add, Move, Audio } type;
-    const int x;
-    const int y;
-    const int id;
-    const int room_id;
-    // AudioFile<float> data;
+#include <cstdint>
+#include <string>
+#include <utility>
 
-    Message(Message_type type, int x, int y, int id, int room_id /*, AudioFile<float> data_*/)
-        : type(type), x(x), y(y), id(id), room_id(room_id) /*, data(std::move(data_))*/ {};
+struct Message {
+    enum Message_type { Create, Destroy, Add, Move, Audio } type;
+    const std::int64_t id;
+    const std::string name;
+    const double x;
+    const double y;
+
+    Message(Message_type type,
+            std::int64_t id,
+            std::string name,
+            double x,
+            double y);
 };
 
 #endif  // MESSAGE_H
