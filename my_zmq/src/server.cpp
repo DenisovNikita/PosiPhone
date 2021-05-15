@@ -23,7 +23,7 @@ std::unordered_set<string> participants;
 int main() {
     zmq::context_t context(1);
     zmq::socket_t socket(context, ZMQ_REP);
-    socket.bind ("tcp://*:5555");
+    socket.bind ("tcp://*:1234");
     while (true) {
         try {
             Message requestMessage = receive(socket);
@@ -63,7 +63,8 @@ int main() {
                 cout << "Received "
                      << requestMessage.from << " -> "
                      << requestMessage.to << ": "<< requestMessage.message << "\n";
-                queue.push_back(requestMessage);
+                cout.flush();
+		queue.push_back(requestMessage);
             }
             send(socket, responseMessage);
         } catch (const std::exception &e) {
