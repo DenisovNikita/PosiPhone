@@ -18,7 +18,7 @@ using std::stringstream;
 using std::cout, std::cin;
 
 int main() {
-    auto server_name = "tcp://localhost:5555";
+    auto server_name = "tcp://188.119.67.234:1234";
     zmq::context_t context(1);
     zmq::socket_t socket(context, ZMQ_REQ);
     cout << "Connecting to server..." << "\n";
