@@ -3,7 +3,6 @@
 
 #include <QAudioRecorder>
 #include <QDebug>
-#include <QDir>
 #include <QFile>
 #include <QIcon>
 #include <QMediaPlayer>
@@ -11,36 +10,38 @@
 #include <QPushButton>
 #include <QTimer>
 #include <QUrl>
-#include <memory>
 #include <string>
 
 class Audio : public QPushButton {
     Q_OBJECT
-    bool status;
     std::string name;
-    std::string icons[2];
+    QIcon icons[2];
+    void setIcon();
 
+private slots:
     void switch_button();
 
 protected:
-    explicit Audio(const std::string &name);
+    explicit Audio(const std::string &name, QWidget *parent = nullptr);
 };
 
 class Player : public Audio {
-    std::unique_ptr<QMediaPlayer> player;
+    Q_OBJECT
+    QMediaPlayer player;
     void play(const std::string &filename);
 
 public:
-    Player();
+    explicit Player(QWidget *parent = nullptr);
 };
 
 class Recorder : public Audio {
-    std::unique_ptr<QAudioRecorder> recorder;
+    Q_OBJECT
+    QAudioRecorder recorder;
     void record();
     void stop();
 
 public:
-    Recorder();
+    explicit Recorder(QWidget *parent = nullptr);
 };
 
 #endif  // BUTTON_H

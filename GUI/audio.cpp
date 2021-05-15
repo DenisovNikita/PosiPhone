@@ -1,49 +1,63 @@
 #include "audio.h"
 
-Audio::Audio(const std::string &name)
-    : QPushButton(), status(true), name(name) {
-    std::string path = QDir::currentPath().toStdString() + "/../icons/";
-    icons[0] = path + name + "_off.png";
-    icons[1] = path + name + "_on.png";
+namespace {
+QIcon init_icon(const std::string &name, bool b) {
+    std::string path = ":/icons/" + name + (b ? "_on.png" : "_off.png");
+    return QIcon(path.c_str());
+}
+}  // namespace
+
+Audio::Audio(const std::string &name, QWidget *parent)
+    : QPushButton(parent), name(name) {
+    setCheckable(true);
+    setChecked(true);
+    for (int i = 0; i < 2; ++i) {
+        icons[i] = init_icon(name, i);
+    }
     setFixedSize(56, 48);
-    setFlat(true);
-    setIcon(QIcon(icons[status].c_str()));
-    setIconSize(QSize(48, 40));
+    setIcon();
     connect(this, &QPushButton::clicked, this, &Audio::switch_button);
     qDebug() << std::string("button \"" + name + "\" was created").c_str();
 }
 
-void Audio::switch_button() {
-    status ^= true;
-    setIcon(QIcon(icons[status].c_str()));
+void Audio::setIcon() {
+    QPushButton::setIcon(icons[isChecked()]);
     setIconSize(QSize(48, 40));
+}
+
+void Audio::switch_button() {
+    setIcon();
     qDebug() << std::string("button \"" + name + "\" was turned " +
-                            (status ? "on" : "off"))
+                            (isChecked() ? "on" : "off"))
                     .c_str();
 }
 
-Player::Player() : Audio("sound"), player(std::make_unique<QMediaPlayer>()) {
+Player::Player(QWidget *parent) : Audio("sound", parent), player() {
 }
 
 void Player::play(const std::string &filename) {
     qDebug() << "playing file";
-    std::string file = QDir::currentPath().toStdString() + "/../" + filename;
-    player->setMedia(QUrl::fromLocalFile(file.c_str()));
-    player->play();
+    std::string file = "/../" + filename;
+    player.setMedia(QUrl::fromLocalFile(file.c_str()));
+    player.play();
 }
 
-Recorder::Recorder()
-    : Audio("micro"), recorder(std::make_unique<QAudioRecorder>()) {
+Recorder::Recorder(QWidget *parent) : Audio("micro", parent), recorder() {
 }
 
 void Recorder::record() {
     qDebug() << "recording started";
-    std::string file = QDir::currentPath().toStdString() + "/sample.wav";
-    recorder->setOutputLocation(QUrl::fromLocalFile(file.c_str()));
-    recorder->record();
+    std::string file = "/sample.wav";
+    recorder.setOutputLocation(QUrl::fromLocalFile(file.c_str()));
+    recorder.record();
 }
 
 void Recorder::stop() {
-    recorder->stop();
+    recorder.stop();
     qDebug() << "recording stopped";
 }
+
+//    Player test;
+//    test.play("sample.wav");
+//    test.record();
+//    QTimer::singleShot(5000, &test, &Recorder::stop);

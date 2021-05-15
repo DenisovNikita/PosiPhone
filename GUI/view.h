@@ -2,9 +2,7 @@
 #define VIEW_H
 
 #include <QGraphicsScene>
-#include <QGraphicsView>
-#include <QGridLayout>
-#include <QToolBar>
+#include <QMainWindow>
 #include <cstdint>
 #include <iosfwd>
 #include <memory>
@@ -12,20 +10,17 @@
 #include "audio.h"
 #include "model_fwd.h"
 #include "move_item.h"
+#include "ui_view.h"
 
-class View : public QWidget {
+class View : public QMainWindow {
     Q_OBJECT
-    Model *model = nullptr;
-
+    Ui::View ui;
+    Model *model;
     QGraphicsScene scene;
-    QGraphicsView view;
     std::unordered_map<std::int64_t, std::unique_ptr<MoveItem>> items;
 
-    Player player;
-    Recorder recorder;
-
 public:
-    explicit View(Model *model);
+    explicit View(Model *model, QWidget *parent = nullptr);
 
 public slots:
     void add_item(const User &user, std::int64_t type);

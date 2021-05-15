@@ -1,31 +1,12 @@
 #include "view.h"
 #include <iostream>
 
-View::View(Model *model)
-    : QWidget(), model(model), scene(), view(), player(), recorder() {
-    // some scene settings
+View::View(Model *model, QWidget *parent)
+    : QMainWindow(parent), ui(), model(model), scene(this) {
+    ui.setupUi(this);
     scene.setSceneRect(-300, -300, 600, 600);
     scene.setItemIndexMethod(QGraphicsScene::NoIndex);
-
-    // some view settings
-    view.setScene(&scene);
-    view.setRenderHint(QPainter::Antialiasing);
-    view.setCacheMode(QGraphicsView::CacheBackground);
-    view.setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
-    view.setOptimizationFlags(QGraphicsView::DontSavePainterState);
-    view.setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    view.setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-
-    auto *gridLayout = new QGridLayout();
-    gridLayout->addWidget(&view);
-    auto *buttons = new QToolBar();
-    buttons->addWidget(&recorder);
-    buttons->addWidget(&player);
-    gridLayout->addWidget(buttons);
-
-    setWindowTitle("PosiPhone");
-    setLayout(gridLayout);
-    setFixedSize(this->sizeHint());
+    ui.view->setScene(&scene);
 }
 
 void View::add_item(const User &user, std::int64_t type) {
