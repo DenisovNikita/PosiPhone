@@ -1,0 +1,8 @@
+<!DOCTYPE RCC><RCC version="1.0">
+    <qresource>
+        <file>icons/micro_off.png</file>
+        <file>icons/micro_on.png</file>
+        <file>icons/sound_off.png</file>
+        <file>icons/sound_on.png</file>
+    </qresource>
+</RCC>
