@@ -6,6 +6,7 @@ struct Message {
     string from;
     string to;
     string message;
+    string command;
 
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version)
@@ -13,6 +14,7 @@ struct Message {
         ar & from;
         ar & to;
         ar & message;
+        ar & command;
     }
 };
 

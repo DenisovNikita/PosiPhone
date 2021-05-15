@@ -32,9 +32,9 @@ int main() {
             responseMessage.to = requestMessage.from;
             responseMessage.message = "OK";
             if (requestMessage.to == "Server") {
-                if (requestMessage.message == "init") {
+                if (requestMessage.command == "init") {
                     participants.insert(requestMessage.from);
-                } else if (requestMessage.message == "get") {
+                } else if (requestMessage.command == "get") {
                     auto it = find_if(queue.begin(), queue.end(),
                                       [&](Message &m) {
                                           return m.to == requestMessage.from;
@@ -45,18 +45,22 @@ int main() {
                     } else {
                         responseMessage.message = "No new messages";
                     }
-                } else if (requestMessage.message == "list") {
+                } else if (requestMessage.command == "list") {
                     responseMessage.message.clear();
                     for (const auto &p : participants) {
                         responseMessage.message += p + "\n";
                     }
-                } else if (requestMessage.message == "kill_me") {
+                } else if (requestMessage.command == "kill_me") {
                     participants.erase(requestMessage.from);
-                } else {
+                } else {  // should not be another message to server
+                    std::cerr << "from:    " << requestMessage.from << "\n"
+                              << "to:      " << requestMessage.to << "\n"
+                              << "message: " << requestMessage.message << "\n"
+                              << "command: " << requestMessage.command << "\n";
                     assert(false);
                 }
             } else {
-                cout << "Received Hello "
+                cout << "Received "
                      << requestMessage.from << " -> "
                      << requestMessage.to << ": "<< requestMessage.message << "\n";
                 queue.push_back(requestMessage);
