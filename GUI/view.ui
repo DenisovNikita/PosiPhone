@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
-    <class>View</class>
-    <widget class="QMainWindow" name="main_window">
+    <class>main_window</class>
+    <widget class="QMainWindow" name="View">
         <property name="geometry">
             <rect>
                 <x>0</x>
@@ -20,6 +20,14 @@
             <layout class="QGridLayout" name="gridLayout">
                 <item row="0" column="0">
                     <widget class="QGraphicsView" name="view">
+                        <property name="geometry">
+                            <rect>
+                                <x>-300</x>
+                                <y>-300</y>
+                                <width>600</width>
+                                <height>600</height>
+                            </rect>
+                        </property>
                         <property name="verticalScrollBarPolicy">
                             <enum>Qt::ScrollBarAlwaysOff</enum>
                         </property>
@@ -69,8 +77,6 @@
             <header>audio.h</header>
         </customwidget>
     </customwidgets>
-    <resources/>
-    <connections/>
     <resources/>
     <connections/>
 </ui>
