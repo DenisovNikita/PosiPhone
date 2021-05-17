@@ -1,3 +1,5 @@
+Структура проекта: https://drive.google.com/file/d/1-RCDw7RNoeNboZbftjLN3Miu5RbrmB6-/view?usp=sharing
+
 # PosiPhone
 Леша
 * [Done] Собрать базовый шаблон на Qt.
