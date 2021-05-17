@@ -1,4 +1,4 @@
-Структура проекта: https://drive.google.com/file/d/1-RCDw7RNoeNboZbftjLN3Miu5RbrmB6-/view?usp=sharing
+Структура проекта: https://drive.google.com/drive/folders/1ASIoVhhzhAFlpNC7Bs1EUYrgON7MrDJA?usp=sharing
 
 # PosiPhone
 Леша
