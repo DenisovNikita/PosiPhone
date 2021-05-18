@@ -1,5 +1,5 @@
-#ifndef PRODUCER_H
-#define PRODUCER_H
+#ifndef GUI_PRODUCER_H
+#define GUI_PRODUCER_H
 
 #include <folly/io/async/NotificationQueue.h>
 #include <folly/io/async/ScopedEventBaseThread.h>
@@ -12,7 +12,7 @@ class Producer {
 
 public:
     explicit Producer(Model *model);
-    void send_message(Message msg);
+    void send_message(const Message &msg);
 };
 
-#endif  // PRODUCER_H
+#endif  // GUI_PRODUCER_H

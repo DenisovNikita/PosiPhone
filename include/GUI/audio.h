@@ -1,5 +1,5 @@
-#ifndef BUTTON_H
-#define BUTTON_H
+#ifndef GUI_BUTTON_H
+#define GUI_BUTTON_H
 
 #include <QAudioRecorder>
 #include <QDebug>
@@ -44,4 +44,4 @@ public:
     explicit Recorder(QWidget *parent = nullptr);
 };
 
-#endif  // BUTTON_H
+#endif  // GUI_BUTTON_H

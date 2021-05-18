@@ -2,7 +2,7 @@
 
 namespace {
 QIcon init_icon(const std::string &name, bool b) {
-    std::string path = ":/icons/" + name + (b ? "_on.png" : "_off.png");
+    std::string path = ":/" + name + (b ? "_on.png" : "_off.png");
     return QIcon(path.c_str());
 }
 }  // namespace

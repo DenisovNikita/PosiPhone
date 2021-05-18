@@ -2,7 +2,7 @@
 #include <iostream>
 
 Model::Model()
-    : ID(0),  // TODO: get id by network
+    : ID(0),  // TODO: get get_id by network
       login_widget(this),
       view(std::make_unique<View>(this)),
       th("model"),
@@ -21,11 +21,8 @@ Model::Model()
 void Model::messageAvailable(Message &&msg) noexcept {
     if (msg.type == Message::Message_type::Create) {
         add_item(msg.id, "abacaba", msg.x, msg.y, 1);
-        // TODO send my coords back
     } else if (msg.type == Message::Message_type::Destroy) {
         remove_item(msg.id);
-    } else if (msg.type == Message::Message_type::Add) {
-        add_item(msg.id, "abacaba", msg.x, msg.y, 1);
     } else if (msg.type == Message::Message_type::Move) {
         set_pos(msg.id, msg.x, msg.y);
     } else if (msg.type == Message::Message_type::Audio) {
@@ -38,6 +35,10 @@ void Model::messageAvailable(Message &&msg) noexcept {
 Model::~Model() {
     // TODO send deletion to all
     th.getEventBase()->runInEventBaseThread([this]() { stopConsuming(); });
+}
+
+std::int64_t Model::get_id() const {
+    return ID;
 }
 
 folly::NotificationQueue<Message> *Model::getCurrentQueue() {

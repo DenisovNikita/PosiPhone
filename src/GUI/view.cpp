@@ -7,6 +7,7 @@ View::View(Model *model, QWidget *parent)
     scene.setSceneRect(-300, -300, 600, 600);
     scene.setItemIndexMethod(QGraphicsScene::NoIndex);
     ui.view->setScene(&scene);
+    qDebug() << ui.view->mapToScene(ui.view->rect()).boundingRect();
 }
 
 void View::add_item(const User &user, std::int64_t type) {

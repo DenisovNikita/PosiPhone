@@ -1,5 +1,5 @@
-#ifndef MOCK_H
-#define MOCK_H
+#ifndef GUI_MOCK_H
+#define GUI_MOCK_H
 
 #include <folly/io/async/ScopedEventBaseThread.h>
 #include <memory>
@@ -17,4 +17,4 @@ public:
     explicit Mock(Model *model);
 };
 
-#endif  // MOCK_H
+#endif  // GUI_MOCK_H

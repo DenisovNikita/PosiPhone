@@ -1,5 +1,5 @@
-#ifndef MODEL_H
-#define MODEL_H
+#ifndef GUI_MODEL_H
+#define GUI_MODEL_H
 
 #include <folly/io/async/NotificationQueue.h>
 #include <folly/io/async/ScopedEventBaseThread.h>
@@ -49,8 +49,9 @@ public slots:
 public:
     Model();
     void messageAvailable(Message &&msg) noexcept override;
+    std::int64_t get_id() const;
     folly::NotificationQueue<Message> *getCurrentQueue();
     ~Model() override;
 };
 
-#endif  // MODEL_H
+#endif  // GUI_MODEL_H

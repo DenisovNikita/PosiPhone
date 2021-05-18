@@ -38,10 +38,6 @@ void MyCircle::paint(QPainter *painter,
 
 void MyCircle::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
     QPointF pos = event->scenePos();
-    pos.setX(std::max(scene()->sceneRect().topLeft().x() + RADIUS + DELTA,
-             std::min(pos.x(), scene()->sceneRect().bottomRight().x() - RADIUS - DELTA)));
-    pos.setY(std::max(scene()->sceneRect().topLeft().y() + RADIUS + DELTA,
-             std::min(pos.y(), scene()->sceneRect().bottomRight().y() - RADIUS - DELTA)));
     producer.send_message(
         Message(Message::Message_type::Move, ID, name, pos.x(), pos.y()));
 }

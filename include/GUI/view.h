@@ -1,5 +1,5 @@
-#ifndef VIEW_H
-#define VIEW_H
+#ifndef GUI_VIEW_H
+#define GUI_VIEW_H
 
 #include <QGraphicsScene>
 #include <QMainWindow>
@@ -28,4 +28,4 @@ public slots:
     void set_pos(std::int64_t id, double x, double y);
 };
 
-#endif  // VIEW_H
+#endif  // GUI_VIEW_H

@@ -1,5 +1,5 @@
-#ifndef MOVE_ITEM_H
-#define MOVE_ITEM_H
+#ifndef GUI_MOVE_ITEM_H
+#define GUI_MOVE_ITEM_H
 
 #include <QCursor>
 #include <QGraphicsItem>
@@ -52,4 +52,4 @@ private:
                QWidget *widget) override;
 };
 
-#endif  // MOVE_ITEM_H
+#endif  // GUI_MOVE_ITEM_H

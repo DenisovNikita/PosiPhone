@@ -1,12 +1,12 @@
-#ifndef MESSAGE_H
-#define MESSAGE_H
+#ifndef GUI_MESSAGE_H
+#define GUI_MESSAGE_H
 
 #include <cstdint>
 #include <string>
 #include <utility>
 
 struct Message {
-    enum Message_type { Create, Destroy, Add, Move, Audio } type;
+    enum Message_type { Create, Destroy, Move, Audio } type;
     const std::int64_t id;
     const std::string name;
     const double x;
@@ -19,4 +19,4 @@ struct Message {
             double y);
 };
 
-#endif  // MESSAGE_H
+#endif  // GUI_MESSAGE_H

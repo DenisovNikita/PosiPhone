@@ -1,5 +1,5 @@
-#ifndef USER_H
-#define USER_H
+#ifndef GUI_USER_H
+#define GUI_USER_H
 
 #include <cstdint>
 #include <string>
@@ -20,4 +20,4 @@ public:
     [[maybe_unused]] [[nodiscard]] double y() const;
 };
 
-#endif  // USER_H
+#endif  // GUI_USER_H

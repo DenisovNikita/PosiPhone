@@ -13,7 +13,6 @@ LoginWidget::LoginWidget(Model *model)
             &Model::get_check_login_request);
     connect(model, &Model::send_check_login_result, this,
             &LoginWidget::get_check_login_result);
-    msg.setModal(true);
 
     auto *layout = new QGridLayout(this);
     layout->addWidget(&line_edit);
@@ -26,9 +25,10 @@ void LoginWidget::button_is_clicked() {
 }
 
 void LoginWidget::get_check_login_result() {
-    msg.showMessage(std::string("user with name \"" +
-                                line_edit.text().toStdString() +
-                                "\" already exists")
-                        .c_str());
+    QMessageBox::warning(
+        this, "Warning",
+        std::string("User with name \"" + line_edit.text().toStdString() +
+                    "\" already exists")
+            .c_str());
     line_edit.clear();
 }
