@@ -12,25 +12,37 @@
 #include <boost/archive/text_iarchive.hpp>
 
 #include "my_utils.h"
+#include "client.h"
 
 using std::string;
 using std::stringstream;
 using std::cout, std::cin;
 
-int main() {
-    auto server_name = "tcp://188.119.67.234:1234";
-    zmq::context_t context(1);
-    zmq::socket_t socket(context, ZMQ_REQ);
+namespace {
+auto server_name = "tcp://188.119.67.234:1234";
+
+/*
+auto send_and_receive = [&]() {
+    send(socket, msg);
+    std::this_thread::sleep_for(std::chrono::milliseconds(TIME_SLEEP));
+    return receive(socket);
+};
+*/
+
+}
+
+Client::Client(Model *m): m(m), context(1), socket(context, ZMQ_REQ) {}
+
+int Client::connect_to_server() {
     cout << "Connecting to server..." << "\n";
-    socket.connect(server_name);
+    return socket.connect(server_name);
+}
+
+/*
+void start_networking() {
     Message msg;
     cout << "name: ";
     cin >> msg.from;
-    auto send_and_receive = [&]() {
-        send(socket, msg);
-        std::this_thread::sleep_for(std::chrono::milliseconds(TIME_SLEEP));
-        return receive(socket);
-    };
 
     // to initialize yourself on server
     msg.to = "Server";
@@ -85,5 +97,19 @@ int main() {
             cout << "Exit:                      [exit]\n";
         }
     }
+
     t.detach();
+}
+*/
+
+void Client::messageAvailable(Message &&msg) noexcept {
+    if (m->getCurrentQueue->get_id() == msg.id) {  // msg from model
+        send_to_server(msg);
+    } else {  // msg from server
+        send_to_model(msg);
+    }
+}
+
+bool Client::is_ok_connection() {
+    return 1;
 }
