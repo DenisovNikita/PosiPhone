@@ -1,30 +1,33 @@
 cmake_minimum_required(VERSION 3.16)
-
-set(CMAKE_CXX_COMPILER g++-10)
-set(CMAKE_CXX_FLAGS -pthread)
-
-project(my_zmq)
-
-find_package(cppzmq)
-find_package(Boost 1.55 REQUIRED system serialization)
+project(my_zmq LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_executable(single_message main.cpp)
-add_executable(server src/server.cpp src/my_utils.cpp)
+find_package(Boost 1.51.0 COMPONENTS system serialization REQUIRED)
+
+find_path(ZMQ_INCLUDE_DIR zmq.h)
+find_library(ZMQ_LIBRARY NAMES zmq)
+
 add_executable(client src/client.cpp src/my_utils.cpp)
+add_executable(server src/server.cpp src/my_utils.cpp)
 
-include_directories(include)
+target_include_directories(client PRIVATE
+    include/
+    ${ZMQ_INCLUDE_DIR}
+)
+target_include_directories(server PRIVATE
+    include/
+    ${ZMQ_INCLUDE_DIR}
+)
 
-#target_include_directories(single_message PUBLIC ${ZeroMQ_INCLUDE_DIR})
-#target_include_directories(server PUBLIC ${ZeroMQ_INCLUDE_DIR})
-#target_include_directories(client PUBLIC ${ZeroMQ_INCLUDE_DIR})
-
-#target_link_libraries(single_message PUBLIC ${ZeroMQ_LIBRARY})
-#target_link_libraries(server PUBLIC ${ZeroMQ_LIBRARY})
-#target_link_libraries(client PUBLIC ${ZeroMQ_LIBRARY})
-target_link_libraries(single_message PUBLIC cppzmq)
-target_link_libraries(server PUBLIC cppzmq)
-target_link_libraries(client PUBLIC cppzmq)
-target_link_libraries(server PUBLIC boost_serialization)
-target_link_libraries(client PUBLIC boost_serialization)
+target_link_libraries(client PRIVATE
+    boost_serialization
+    pthread
+    ${ZMQ_LIBRARY}
+)
+target_link_libraries(server PRIVATE
+    boost_serialization
+    pthread
+    ${ZMQ_LIBRARY}
+)
