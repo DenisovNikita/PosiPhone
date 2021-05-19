@@ -2,39 +2,57 @@
 #include <iostream>
 
 Model::Model()
-    : ID(0),  // TODO: get get_id by network
+    : ID(0),  // TODO: get id by network
+      client(this),
       login_widget(this),
-      view(std::make_unique<View>(this)),
+      view(this),
       th("model"),
       queue(maxSize) {
     qRegisterMetaType<std::int64_t>("std::int64_t");
     qRegisterMetaType<User>("User");
 
-    connect(view.get());
+    connect_to_view(&view);
     auto *eventBase = th.getEventBase();
     eventBase->runInEventBaseThread(
         [eventBase, this]() { startConsuming(eventBase, &queue); });
+
+    connect(this, &Model::disconnection_signal, this, &Model::disconnection);
+    runner.add("Check connection", [this]() {
+        if (!client.is_ok_connection()) {
+            emit disconnection_signal();
+        }
+        return std::chrono::seconds(1);
+    });
 
     login_widget.show();
 }
 
 void Model::messageAvailable(Message &&msg) noexcept {
-    if (msg.type == Message::Message_type::Create) {
-        add_item(msg.id, "abacaba", msg.x, msg.y, 1);
-    } else if (msg.type == Message::Message_type::Destroy) {
-        remove_item(msg.id);
-    } else if (msg.type == Message::Message_type::Move) {
-        set_pos(msg.id, msg.x, msg.y);
-    } else if (msg.type == Message::Message_type::Audio) {
-        // TODO
+    if (msg.type == Message::MessageType::Create) {
+        if (msg.id == ID) {
+            // TODO push to server
+        } else {
+            add_item(msg.id, "abacaba", msg.x, msg.y, 1);
+        }
+    } else if (msg.type == Message::MessageType::Destroy) {
+        if (msg.id == ID) {
+            // TODO push to server
+        } else {
+            remove_item(msg.id);
+        }
+    } else if (msg.type == Message::MessageType::Move) {
+        if (msg.id == ID) {
+            // TODO push to server
+        } else {
+            set_pos(msg.id, msg.x, msg.y);
+        }
+    } else if (msg.type == Message::MessageType::AudioSource) {
+        // TODO send to server
+    } else if (msg.type == Message::MessageType::AudioResult) {
+        // TODO play recording
     } else {
         std::cerr << "Unknown query\n";
     }
-}
-
-Model::~Model() {
-    // TODO send deletion to all
-    th.getEventBase()->runInEventBaseThread([this]() { stopConsuming(); });
 }
 
 std::int64_t Model::get_id() const {
@@ -45,10 +63,10 @@ folly::NotificationQueue<Message> *Model::getCurrentQueue() {
     return &queue;
 }
 
-void Model::connect(View *v) const {
-    QObject::connect(this, &Model::add_item_signal, v, &View::add_item);
-    QObject::connect(this, &Model::remove_item_signal, v, &View::remove_item);
-    QObject::connect(this, &Model::set_pos_signal, v, &View::set_pos);
+void Model::connect_to_view(View *v) const {
+    connect(this, &Model::add_item_signal, v, &View::add_item);
+    connect(this, &Model::remove_item_signal, v, &View::remove_item);
+    connect(this, &Model::set_pos_signal, v, &View::set_pos);
 }
 
 void Model::add_item(std::int64_t id,
@@ -80,9 +98,16 @@ void Model::set_pos(std::int64_t id, double x, double y) {
     }
 }
 
-void Model::get_check_login_request(const QString &login) {
+void Model::disconnection() {
+//    QMessageBox::warning(this, "Warning", "No internet connection");
+    // TODO show warning widget
+}
+
+void Model::check_login(const QString &login) {
     bool found = false;
     std::string name = login.toStdString();
+    // TODO ask server
+//    client.get_queue()->putMessage(Message(Message::MessageType::CheckName, ID, "abacaba", 0, 0));
     for (auto &[id, user] : users) {
         if (user->name() == name) {
             found = true;
@@ -90,10 +115,17 @@ void Model::get_check_login_request(const QString &login) {
         }
     }
     if (found) {
-        emit send_check_login_result();
+        emit login_found();
     } else {
         login_widget.close();
         add_item(ID, name, 0, 0, 0);
-        view->show();
+        // TODO send creation to everybody
+        view.show();
     }
+}
+
+Model::~Model() {
+    // TODO send deletion to everybody
+    runner.stop();
+    th.getEventBase()->runInEventBaseThread([this]() { stopConsuming(); });
 }
