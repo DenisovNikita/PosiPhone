@@ -1,74 +1,30 @@
-#include <iostream>
-#include <sstream>
-#include <algorithm>
-#include <unordered_set>
+#include "server.h"
+#include "client.h"
 
-#include <boost/serialization/serialization.hpp>
-#include <boost/serialization/string.hpp>
-#include <boost/serialization/map.hpp>
-#include <boost/archive/text_iarchive.hpp>
+Server::Server() : context(1), socket(context, ZMQ_REP),
+                   th("server"), queue(max_size) {
+    auto *eventBase = th.getEventBase();
+    eventBase->runInEventBaseThread(
+            [eventBase, this]() { startConsuming(eventBase, &queue); });
+    socket.bind("tcp://*:1234");
+}
 
-#include <zmq.hpp>
-#include <boost/archive/text_oarchive.hpp>
+folly::NotificationQueue<Message> *Server::get_queue() {
+    return &queue;
+}
 
-#include "my_utils.h"
+void Server::messageAvailable(Message &&msg) noexcept {
+    if (/*I should send to client*/1) {  // TODO: make check condition
+        clients[msg.id]->get_queue()->putMessage(std::move(msg));  // Is all ok there?
+    } else {
+        // TODO: send msg to mixer
+    }
+}
 
-using std::string;
-using std::stringstream;
-using std::cout, std::cin;
-
-std::vector<Message> queue;
-std::unordered_set<string> participants;
+Server::~Server() {
+    th.getEventBase()->runInEventBaseThread([this]() { stopConsuming(); });
+}
 
 int main() {
-    zmq::context_t context(1);
-    zmq::socket_t socket(context, ZMQ_REP);
-    socket.bind ("tcp://*:1234");
-    while (true) {
-        try {
-            Message requestMessage = receive(socket);
-            Message responseMessage;
-            responseMessage.from = "Server";
-            responseMessage.to = requestMessage.from;
-            responseMessage.message = "OK";
-            if (requestMessage.to == "Server") {
-                if (requestMessage.command == "init") {
-                    participants.insert(requestMessage.from);
-                } else if (requestMessage.command == "get") {
-                    auto it = find_if(queue.begin(), queue.end(),
-                                      [&](Message &m) {
-                                          return m.to == requestMessage.from;
-                                      });
-                    if (it != queue.end()) {
-                        responseMessage = *it;
-                        queue.erase(it);
-                    } else {
-                        responseMessage.message = "No new messages";
-                    }
-                } else if (requestMessage.command == "list") {
-                    responseMessage.message.clear();
-                    for (const auto &p : participants) {
-                        responseMessage.message += p + "\n";
-                    }
-                } else if (requestMessage.command == "kill_me") {
-                    participants.erase(requestMessage.from);
-                } else {  // should not be another message to server
-                    std::cerr << "from:    " << requestMessage.from << "\n"
-                              << "to:      " << requestMessage.to << "\n"
-                              << "message: " << requestMessage.message << "\n"
-                              << "command: " << requestMessage.command << "\n";
-                    assert(false);
-                }
-            } else {
-                cout << "Received "
-                     << requestMessage.from << " -> "
-                     << requestMessage.to << ": "<< requestMessage.message << "\n";
-                cout.flush();
-		queue.push_back(requestMessage);
-            }
-            send(socket, responseMessage);
-        } catch (const std::exception &e) {
-            cout << e.what() << "\n";
-        }
-    }
+    Server server;
 }
