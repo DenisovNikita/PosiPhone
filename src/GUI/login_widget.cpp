@@ -7,12 +7,9 @@ LoginWidget::LoginWidget(Model *model)
     setModal(true);
 
     line_edit.setMaxLength(7);
-    connect(&button, &QPushButton::clicked, this,
-            &LoginWidget::button_is_clicked);
-    connect(this, &LoginWidget::send_check_login_request, model,
-            &Model::get_check_login_request);
-    connect(model, &Model::send_check_login_result, this,
-            &LoginWidget::get_check_login_result);
+    connect(&button, &QPushButton::clicked, this, &LoginWidget::button_clicked);
+    connect(this, &LoginWidget::check_login_signal, model, &Model::check_login);
+    connect(model, &Model::login_found, this, &LoginWidget::login_found);
 
     auto *layout = new QGridLayout(this);
     layout->addWidget(&line_edit);
@@ -20,11 +17,11 @@ LoginWidget::LoginWidget(Model *model)
     setLayout(layout);
 }
 
-void LoginWidget::button_is_clicked() {
-    emit send_check_login_request(line_edit.text());
+void LoginWidget::button_clicked() {
+    emit check_login_signal(line_edit.text());
 }
 
-void LoginWidget::get_check_login_result() {
+void LoginWidget::login_found() {
     QMessageBox::warning(
         this, "Warning",
         std::string("User with name \"" + line_edit.text().toStdString() +

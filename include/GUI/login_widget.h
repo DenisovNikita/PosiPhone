@@ -17,11 +17,11 @@ class LoginWidget : public QDialog {
     QPushButton button;
 
 signals:
-    void send_check_login_request(const QString &login);
+    void check_login_signal(const QString &login);
 
 private slots:
-    void button_is_clicked();
-    void get_check_login_result();
+    void button_clicked();
+    void login_found();
 
 public:
     explicit LoginWidget(Model *model);
