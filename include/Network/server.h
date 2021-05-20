@@ -24,6 +24,8 @@ using std::vector;
 
 class Server : public folly::NotificationQueue<Message>::Consumer {
     std::unordered_map<std::int64_t, std::unique_ptr<Client>> clients;
+    std::unordered_set<std::string> usernames;
+    std::unordered_map<std::int64_t, std::pair<double, double>> crds;
     zmq::context_t context;
     zmq::socket_t socket;
     folly::ScopedEventBaseThread th;

@@ -29,8 +29,8 @@ private:
     folly::NotificationQueue<Message> queue;
 
 public:
-    explicit Client(Model *model, Server *s);  // creates a client
-    int connect_to_server();                   // returns error_code
+    explicit Client(Model *model);  // creates a client
+    int connect_to_server();        // returns error_code
     void messageAvailable(Message &&msg) noexcept override;
     bool is_ok_connection();
 
