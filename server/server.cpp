@@ -1,5 +1,6 @@
 #include "server.h"
 #include "client.h"
+#include "message.h"
 
 namespace {
 int counter = 0;
@@ -77,4 +78,6 @@ Server::~Server() {
 
 int main() {
     Server server;
+    while (true) {
+    }
 }

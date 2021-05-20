@@ -12,7 +12,7 @@ find_package(Boost 1.51.0 COMPONENTS system serialization REQUIRED)
 find_path(ZMQ_INCLUDE_DIR zmq.h)
 find_library(ZMQ_LIBRARY NAMES zmq)
 
-add_executable(server server.cpp ../src/Network/client.cpp)
+add_executable(server server.cpp ../src/Network/client.cpp ../src/GUI/message.cpp)
 
 target_include_directories(server PRIVATE
         ../include/GUI/
