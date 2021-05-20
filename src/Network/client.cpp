@@ -31,6 +31,7 @@ int Client::connect_to_server() {
 }
 
 void Client::messageAvailable(Message &&msg) noexcept {
+    cout << "got " << msg.type() << " message\n";
     //    TODO: parsing all messages type and update corresponding info
     //    if (model->get_id() == msg.id) {  // msg from model
     //        server->get_queue()->putMessage(std::move(msg));

@@ -13,10 +13,8 @@
 
 class MoveItem : public QGraphicsItem {
     Q_INTERFACES(QGraphicsItem)
-public:
-    explicit MoveItem(const User &user);
-
 protected:
+    explicit MoveItem(const User &user);
     std::int64_t ID;
     std::string name;
     const int RADIUS = 30, DIAMETER = 2 * RADIUS, DELTA = 3;
@@ -32,6 +30,7 @@ class MyCircle : public MoveItem {
 
 public:
     MyCircle(const User &user, Model *model);
+    enum { Type = UserType + 1 };
 
 private:
     void paint(QPainter *painter,
@@ -45,6 +44,7 @@ private:
 class OtherCircle : public MoveItem {
 public:
     explicit OtherCircle(const User &user);
+    enum { Type = UserType + 2 };
 
 private:
     void paint(QPainter *painter,

@@ -18,22 +18,22 @@ Model::Model()
 
     connect(this, &Model::disconnection_signal, this, &Model::disconnection);
     runner.add("Check connection", [this]() {
-//        if (!client.is_ok_connection()) {
-//            emit disconnection_signal();
-//        }
+        //        if (!client.is_ok_connection()) {
+        //            emit disconnection_signal();
+        //        }
         return std::chrono::seconds(1);
     });
 
     login_widget.show();
-//    add_item(Message(Message::Create, ID, "a)", 0, 0), 0);
-//    view.show();
+    //    add_item(Message::create<Message::MessageType::Create>(ID, "a)", 0,
+    //    0), MyCircle::Type); view.show();
 }
 
 void Model::messageAvailable(Message &&msg) noexcept {
     if (msg.type() == Message::Connect) {
         login_checked(std::move(msg));
     } else if (msg.type() == Message::Create) {
-        add_item(std::move(msg), 1);
+        add_item(std::move(msg), OtherCircle::Type);
     } else if (msg.type() == Message::Move) {
         set_pos(std::move(msg));
     } else if (msg.type() == Message::AudioSource) {
@@ -62,7 +62,9 @@ void Model::login_checked(Message &&msg) {
         emit login_found();
     } else {
         login_widget.close();
-        add_item(Message(Message::Create, ID, "a)", 0, 0), 0);
+        add_item(
+            Message::create<Message::MessageType::Create>(ID, msg.name(), 0, 0),
+            MyCircle::Type);
         view.show();
     }
 }
@@ -71,7 +73,8 @@ void Model::add_item(Message &&msg, int type) {
     if (msg.id() == ID) {
         client.get_queue()->putMessage(msg);
     }
-    users[msg.id()] = std::make_unique<User>(msg.id(), msg.name(), msg.x(), msg.y());
+    users[msg.id()] =
+        std::make_unique<User>(msg.id(), msg.name(), msg.x(), msg.y());
     emit add_item_signal(*users[msg.id()], type);
 }
 
@@ -102,7 +105,8 @@ void Model::set_pos(Message &&msg) {
 }
 
 void Model::disconnection() {
-//    QMessageBox::warning(this, "Warning", "No internet connection");
+    //    QMessageBox::warning(this, "Warning", "No internet connection./n You
+    //    have to re-login.");
     // TODO show warning widget
 }
 
@@ -110,7 +114,8 @@ void Model::check_login(const QString &login) {
     bool found = false;
     std::string name = login.toStdString();
     // TODO ask server
-//    client.get_queue()->putMessage(Message(Message::Connect, ID, "abacaba", 0, 0));
+//    client.get_queue()->putMessage(
+//        Message::create<Message::MessageType::Connect>(ID, name, 0, 0));
     for (auto &[id, user] : users) {
         if (user->name() == name) {
             found = true;
@@ -121,13 +126,15 @@ void Model::check_login(const QString &login) {
         emit login_found();
     } else {
         login_widget.close();
-        add_item(Message(Message::Create, ID, name, 0, 0), 0);
+        add_item(Message::create<Message::MessageType::Create>(ID, name, 0, 0),
+                 MyCircle::Type);
         view.show();
     }
 }
 
 Model::~Model() {
-    client.get_queue()->putMessage(Message(Message::Destroy, ID, "", 0, 0));
+    client.get_queue()->putMessage(
+        Message::create<Message::MessageType::Destroy>(ID));
     runner.stop();
     th.getEventBase()->runInEventBaseThread([this]() { stopConsuming(); });
 }

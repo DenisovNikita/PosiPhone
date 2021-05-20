@@ -11,9 +11,9 @@ View::View(Model *model, QWidget *parent)
 }
 
 void View::add_item(const User &user, std::int64_t type) {
-    if (type == 0) {
+    if (type == MyCircle::Type) {
         items[user.id()] = std::make_unique<MyCircle>(user, model);
-    } else if (type == 1) {
+    } else if (type == OtherCircle::Type) {
         items[user.id()] = std::make_unique<OtherCircle>(user);
     } else {
         std::cerr << "Trying to create circle of unknown type\n";

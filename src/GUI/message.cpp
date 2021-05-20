@@ -27,3 +27,28 @@ double Message::x() const {
 double Message::y() const {
     return y_;
 }
+
+Message Message::create_by_id(MessageType type, std::int64_t id) {
+    return Message(type, id, {}, {}, {});
+}
+
+Message Message::create_by_id_x_y(MessageType type,
+                                  std::int64_t id,
+                                  double x,
+                                  double y) {
+    return Message(type, id, {}, x, y);
+}
+
+Message Message::create_by_id_name(MessageType type,
+                                   std::int64_t id,
+                                   std::string name) {
+    return Message(type, id, std::move(name), {}, {});
+}
+
+Message Message::create_by_id_name_x_y(MessageType type,
+                                       std::int64_t id,
+                                       std::string name,
+                                       double x,
+                                       double y) {
+    return Message(type, id, std::move(name), x, y);
+}
