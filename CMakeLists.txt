@@ -46,12 +46,17 @@ add_executable(${PROJECT_NAME}
     src/GUI/user.cpp
     src/GUI/view.cpp
     resources/resources.qrc
+
+    include/Network/client.h
+    include/Network/server.h
+    src/Network/client.cpp
 )
 
 qt5_use_modules(${PROJECT_NAME} Widgets Multimedia)
 
 target_include_directories(${PROJECT_NAME} PRIVATE
     include/GUI/
+    include/Network/
     ${FOLLY_INCLUDE_DIR}
     ${Boost_INCLUDE_DIRS}
     ${ZMQ_INCLUDE_DIR}
