@@ -29,23 +29,11 @@ Model::Model()
 
 void Model::messageAvailable(Message &&msg) noexcept {
     if (msg.type == Message::MessageType::Create) {
-        if (msg.id == ID) {
-            // TODO push to server
-        } else {
-            add_item(msg.id, "abacaba", msg.x, msg.y, 1);
-        }
+        add_item(msg.id, "abacaba", msg.x, msg.y, 1);
     } else if (msg.type == Message::MessageType::Destroy) {
-        if (msg.id == ID) {
-            // TODO push to server
-        } else {
-            remove_item(msg.id);
-        }
+        remove_item(msg.id);
     } else if (msg.type == Message::MessageType::Move) {
-        if (msg.id == ID) {
-            // TODO push to server
-        } else {
-            set_pos(msg.id, msg.x, msg.y);
-        }
+        set_pos(msg.id, msg.x, msg.y);
     } else if (msg.type == Message::MessageType::AudioSource) {
         // TODO send to server
     } else if (msg.type == Message::MessageType::AudioResult) {
