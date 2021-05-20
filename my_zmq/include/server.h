@@ -1,21 +1,20 @@
 #pragma once
 
-#include "client_fwd.h"
+#include <folly/io/async/NotificationQueue.h>
+#include <folly/io/async/ScopedEventBaseThread.h>
 #include <algorithm>
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/serialization/map.hpp>
+#include <boost/serialization/serialization.hpp>
+#include <boost/serialization/string.hpp>
+#include <cstdint>
 #include <iostream>
 #include <sstream>
 #include <unordered_set>
 #include <vector>
-
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/serialization/map.hpp>
-#include <boost/serialization/serialization.hpp>
-#include <boost/serialization/string.hpp>
-
-#include <boost/archive/text_oarchive.hpp>
 #include <zmq.hpp>
-#include <cstdint>
-
+#include "client_fwd.h"
 #include "message.h"
 
 using std::cout, std::cin;
