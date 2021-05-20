@@ -33,8 +33,8 @@ void Server::messageAvailable(Message &&msg) noexcept {
             //            TODO: get ptr to client from msg
             //            clients[new_id] = msg.ptr_client;
             crds[new_id] = {msg.x(), msg.y()};
-            Message new_msg(Message::MessageType::Create, new_id, msg.name(),
-                            msg.x(), msg.y());
+            Message new_msg = Message::create<Message::MessageType::Create>(
+                new_id, msg.name(), msg.x(), msg.y());
             for (auto &[id, ptr_client] : clients) {
                 ptr_client->get_queue()->putMessage(new_msg);
             }
@@ -65,7 +65,7 @@ void Server::messageAvailable(Message &&msg) noexcept {
         }
     } else {
         // There msg.type() can be equal Message::MessageType::Create, but it
-        // not suitable to server
+        // is not suitable situation for server
         std::cerr << "Received unknown (to server) message type = |"
                   << msg.type() << "|\n";
         assert(false);
@@ -78,6 +78,7 @@ Server::~Server() {
 
 int main() {
     Server server;
+    // server work infinitely
     while (true) {
     }
 }
