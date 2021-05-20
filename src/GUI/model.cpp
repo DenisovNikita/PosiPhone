@@ -25,7 +25,7 @@ Model::Model()
     });
 
     login_widget.show();
-//    add_item(Message(Message::Create, ID, "a)", 0, 0), 0);
+//    add_item(Message::create<Message::MessageType::Create>(ID, "a)", 0, 0), 0);
 //    view.show();
 }
 
@@ -62,7 +62,7 @@ void Model::login_checked(Message &&msg) {
         emit login_found();
     } else {
         login_widget.close();
-        add_item(Message(Message::Create, ID, "a)", 0, 0), 0);
+        add_item(Message::create<Message::MessageType::Create>(ID, msg.name(), 0, 0), 0);
         view.show();
     }
 }
@@ -110,7 +110,7 @@ void Model::check_login(const QString &login) {
     bool found = false;
     std::string name = login.toStdString();
     // TODO ask server
-//    client.get_queue()->putMessage(Message(Message::Connect, ID, "abacaba", 0, 0));
+//    client.get_queue()->putMessage(Message::create(Message::MessageType::Connect, ID, "abacaba", 0, 0));
     for (auto &[id, user] : users) {
         if (user->name() == name) {
             found = true;
@@ -121,13 +121,13 @@ void Model::check_login(const QString &login) {
         emit login_found();
     } else {
         login_widget.close();
-        add_item(Message(Message::Create, ID, name, 0, 0), 0);
+        add_item(Message::create<Message::MessageType::Create>(ID, name, 0, 0), 0);
         view.show();
     }
 }
 
 Model::~Model() {
-    client.get_queue()->putMessage(Message(Message::Destroy, ID, "", 0, 0));
+    client.get_queue()->putMessage(Message::create<Message::MessageType::Destroy>(ID));
     runner.stop();
     th.getEventBase()->runInEventBaseThread([this]() { stopConsuming(); });
 }
