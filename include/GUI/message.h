@@ -5,25 +5,33 @@
 #include <string>
 #include <utility>
 
-struct Message {
+class Message {
+public:
     enum MessageType {
+        Connect, // TODO send pointer on client
         Create,
-        Destroy,
         Move,
         AudioSource,
         AudioResult,
-        CheckName
-    } type;
-    const std::int64_t id;
-    const std::string name;
-    const double x;
-    const double y;
+        Destroy
+    };
+private:
+    MessageType type_;
+    std::int64_t id_;
+    std::string name_;
+    double x_, y_;
 
+public:
     Message(MessageType type,
             std::int64_t id,
             std::string name,
             double x,
             double y);
+    [[nodiscard]] MessageType type() const;
+    [[nodiscard]] std::int64_t id() const;
+    [[nodiscard]] std::string name() const;
+    [[nodiscard]] double x() const;
+    [[nodiscard]] double y() const;
 };
 
 #endif  // GUI_MESSAGE_H
