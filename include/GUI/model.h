@@ -35,13 +35,10 @@ class Model final : public QWidget,
     folly::ThreadedRepeatingFunctionRunner runner;
 
     void connect_to_view(View *view) const;
-    void add_item(std::int64_t id,
-                  const std::string &name,
-                  double x,
-                  double y,
-                  int type);
-    void remove_item(std::int64_t id);
-    void set_pos(std::int64_t id, double x, double y);
+    void login_checked(Message &&msg);
+    void add_item(Message &&msg, int type);
+    void remove_item(Message &&msg);
+    void set_pos(Message &&msg);
 
 signals:
     void add_item_signal(const User &user, int type);
@@ -59,7 +56,6 @@ public slots:
 public:
     Model();
     void messageAvailable(Message &&msg) noexcept override;
-    std::int64_t get_id() const;
     folly::NotificationQueue<Message> *getCurrentQueue();
     ~Model() override;
 };

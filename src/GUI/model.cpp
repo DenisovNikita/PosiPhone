@@ -2,7 +2,7 @@
 #include <iostream>
 
 Model::Model()
-    : ID(0),  // TODO: get id by network
+    : ID(),
       client(this),
       login_widget(this),
       view(this),
@@ -18,33 +18,33 @@ Model::Model()
 
     connect(this, &Model::disconnection_signal, this, &Model::disconnection);
     runner.add("Check connection", [this]() {
-        if (!client.is_ok_connection()) {
-            emit disconnection_signal();
-        }
+//        if (!client.is_ok_connection()) {
+//            emit disconnection_signal();
+//        }
         return std::chrono::seconds(1);
     });
 
     login_widget.show();
+//    add_item(Message(Message::Create, ID, "a)", 0, 0), 0);
+//    view.show();
 }
 
 void Model::messageAvailable(Message &&msg) noexcept {
-    if (msg.type == Message::MessageType::Create) {
-        add_item(msg.id, "abacaba", msg.x, msg.y, 1);
-    } else if (msg.type == Message::MessageType::Destroy) {
-        remove_item(msg.id);
-    } else if (msg.type == Message::MessageType::Move) {
-        set_pos(msg.id, msg.x, msg.y);
-    } else if (msg.type == Message::MessageType::AudioSource) {
+    if (msg.type() == Message::Connect) {
+        login_checked(std::move(msg));
+    } else if (msg.type() == Message::Create) {
+        add_item(std::move(msg), 1);
+    } else if (msg.type() == Message::Move) {
+        set_pos(std::move(msg));
+    } else if (msg.type() == Message::AudioSource) {
         // TODO send to server
-    } else if (msg.type == Message::MessageType::AudioResult) {
+    } else if (msg.type() == Message::AudioResult) {
         // TODO play recording
+    } else if (msg.type() == Message::Destroy) {
+        remove_item(std::move(msg));
     } else {
         std::cerr << "Unknown query\n";
     }
-}
-
-std::int64_t Model::get_id() const {
-    return ID;
 }
 
 folly::NotificationQueue<Message> *Model::getCurrentQueue() {
@@ -57,30 +57,45 @@ void Model::connect_to_view(View *v) const {
     connect(this, &Model::set_pos_signal, v, &View::set_pos);
 }
 
-void Model::add_item(std::int64_t id,
-                     const std::string &name,
-                     double x,
-                     double y,
-                     int type) {
-    users[id] = std::make_unique<User>(id, name, x, y);
-    emit add_item_signal(*users[id], type);
+void Model::login_checked(Message &&msg) {
+    if (msg.id() == -1) {
+        emit login_found();
+    } else {
+        login_widget.close();
+        add_item(Message(Message::Create, ID, "a)", 0, 0), 0);
+        view.show();
+    }
 }
 
-void Model::remove_item(std::int64_t id) {
-    auto user = users.find(id);
+void Model::add_item(Message &&msg, int type) {
+    if (msg.id() == ID) {
+        client.get_queue()->putMessage(msg);
+    }
+    users[msg.id()] = std::make_unique<User>(msg.id(), msg.name(), msg.x(), msg.y());
+    emit add_item_signal(*users[msg.id()], type);
+}
+
+void Model::remove_item(Message &&msg) {
+    auto user = users.find(msg.id());
     if (user != users.end()) {
+        if (msg.id() == ID) {
+            client.get_queue()->putMessage(msg);
+        }
         users.erase(user);
-        emit remove_item_signal(id);
+        emit remove_item_signal(msg.id());
     } else {
         std::cerr << "Trying to remove unknown circle\n";
     }
 }
 
-void Model::set_pos(std::int64_t id, double x, double y) {
-    auto user = users.find(id);
+void Model::set_pos(Message &&msg) {
+    auto user = users.find(msg.id());
     if (user != users.end()) {
-        user->second->set_pos(x, y);
-        emit set_pos_signal(id, x, y);
+        if (msg.id() == ID) {
+            client.get_queue()->putMessage(msg);
+        }
+        user->second->set_pos(msg.x(), msg.y());
+        emit set_pos_signal(msg.id(), msg.x(), msg.y());
     } else {
         std::cerr << "Trying to move unknown circle\n";
     }
@@ -95,7 +110,7 @@ void Model::check_login(const QString &login) {
     bool found = false;
     std::string name = login.toStdString();
     // TODO ask server
-//    client.get_queue()->putMessage(Message(Message::MessageType::CheckName, ID, "abacaba", 0, 0));
+//    client.get_queue()->putMessage(Message(Message::Connect, ID, "abacaba", 0, 0));
     for (auto &[id, user] : users) {
         if (user->name() == name) {
             found = true;
@@ -106,14 +121,13 @@ void Model::check_login(const QString &login) {
         emit login_found();
     } else {
         login_widget.close();
-        add_item(ID, name, 0, 0, 0);
-        // TODO send creation to everybody
+        add_item(Message(Message::Create, ID, name, 0, 0), 0);
         view.show();
     }
 }
 
 Model::~Model() {
-    // TODO send deletion to everybody
+    client.get_queue()->putMessage(Message(Message::Destroy, ID, "", 0, 0));
     runner.stop();
     th.getEventBase()->runInEventBaseThread([this]() { stopConsuming(); });
 }
