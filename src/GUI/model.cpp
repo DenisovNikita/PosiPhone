@@ -25,8 +25,9 @@ Model::Model()
     });
 
     login_widget.show();
-    //    add_item(Message::create<Message::MessageType::Create>(ID, "a)", 0,
-    //    0), MyCircle::Type); view.show();
+//    add_item(Message::create<Message::MessageType::Create>(ID, "a)", 0, 0),
+//             MyCircle::Type);
+//    view.show();
 }
 
 void Model::messageAvailable(Message &&msg) noexcept {
@@ -62,9 +63,7 @@ void Model::login_checked(Message &&msg) {
         emit login_found();
     } else {
         login_widget.close();
-        add_item(
-            Message::create<Message::MessageType::Create>(ID, msg.name(), 0, 0),
-            MyCircle::Type);
+        add_item(Message::create<Message::MessageType::Create>(ID, msg.name(), 0, 0), MyCircle::Type);
         view.show();
     }
 }
@@ -105,8 +104,7 @@ void Model::set_pos(Message &&msg) {
 }
 
 void Model::disconnection() {
-    //    QMessageBox::warning(this, "Warning", "No internet connection./n You
-    //    have to re-login.");
+//    QMessageBox::warning(this, "Warning", "No internet connection./n You have to re-login.");
     // TODO show warning widget
 }
 

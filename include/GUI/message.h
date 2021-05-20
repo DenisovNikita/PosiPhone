@@ -20,7 +20,8 @@ private:
     MessageType type_;
     std::int64_t id_;
     std::string name_;
-    double x_, y_;
+    double x_;
+    double y_;
 
     Message(MessageType type,
             std::int64_t id,
