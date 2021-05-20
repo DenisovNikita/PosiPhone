@@ -15,8 +15,9 @@ folly::NotificationQueue<Message> *Server::get_queue() {
 
 void Server::messageAvailable(Message &&msg) noexcept {
     if (/*I should send to client*/ 1) {  // TODO: make check condition
-        clients[msg.id]->get_queue()->putMessage(
-            std::move(msg));  // Is all ok there?
+        clients[msg.id]->get_queue()->putMessage(std::move(msg));
+//        clients[msg.id]->get_queue()->putMessage(
+//            std::move(msg));  // Is all ok there?
     } else {
         // TODO: send msg to mixer
     }
