@@ -29,6 +29,10 @@ Client::Client(Model *m)
     assert(set_connection(socket) == 0);
 }
 
+void Client::send_to_server(Message &&msg) {
+    // TODO: send msg to client via socket
+}
+
 int Client::connect_to_server() {
     return set_connection(socket);
 }
@@ -36,24 +40,19 @@ int Client::connect_to_server() {
 void Client::messageAvailable(Message &&msg) noexcept {
     if (msg.type() == Message::MessageType::Connect ||
         msg.type() == Message::MessageType::AudioSource) {
-        server->get_queue()->putMessage(msg);
-    } else if (msg.type() ==
-               Message::MessageType::Create) {  // must be info about other
-                                                // client
-        usernames.insert(msg.name());
-        crds[msg.id()] = {msg.x(), msg.y()};
-    } else if (msg.type() == Message::MessageType::Move) {
-        crds[msg.id()] = {msg.x(), msg.y()};
+        send_to_server(std::move(msg));
+    } else if (msg.type() == Message::MessageType::Create ||
+               msg.type() ==
+                   Message::MessageType::AudioResult) {  // must be info from
+                                                         // another
+                                                         // client
+        model->get_queue()->putMessage(std::move(msg));
+    } else if (msg.type() == Message::MessageType::Move ||
+               msg.type() == Message::MessageType::Destroy) {
         if (my_id == msg.id()) {  // msg came from model
-            server->get_queue()->putMessage(msg);
-        }
-    } else if (msg.type() == Message::MessageType::AudioResult) {
-        model->get_queue()->putMessage(msg);
-    } else if (msg.type() == Message::MessageType::Destroy) {
-        usernames.erase(msg.name());
-        crds.erase(msg.id());
-        if (msg.id() == my_id) {  // msg came from model
-            server->get_queue()->putMessage(msg);
+            send_to_server(std::move(msg));
+        } else {  // msg came from server
+            model->get_queue()->putMessage(std::move(msg));
         }
     } else {
         assert(false);  // must not be other MessageType

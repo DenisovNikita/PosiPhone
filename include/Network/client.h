@@ -27,8 +27,6 @@ private:
     folly::ScopedEventBaseThread th;
     const uint32_t max_size = 10'000;
     folly::NotificationQueue<Message> queue;
-    std::unordered_set<std::string> usernames;
-    std::unordered_map<std::int64_t, std::pair<double, double>> crds;
     std::int64_t my_id = 0;
 
 public:
@@ -36,6 +34,7 @@ public:
     int connect_to_server();        // returns error_code
     void messageAvailable(Message &&msg) noexcept override;
     bool is_ok_connection();
+    void send_to_server(Message &&msg);
 
     folly::NotificationQueue<Message> *get_queue();
 
