@@ -1,7 +1,7 @@
 #include "producer.h"
 #include "model.h"
 
-Producer::Producer(Model *model) : queue(model->getCurrentQueue()) {
+Producer::Producer(Model *model) : queue(model->get_queue()) {
 }
 
 void Producer::send_message(const Message &msg) {

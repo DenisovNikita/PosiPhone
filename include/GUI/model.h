@@ -26,6 +26,7 @@ class Model final : public QWidget,
     Q_OBJECT
     std::int64_t ID;
     Client client;
+    friend LoginWidget;
     LoginWidget login_widget;
     View view;
     folly::ScopedEventBaseThread th;
@@ -49,14 +50,12 @@ signals:
 
 private slots:
     void disconnection();
-
-public slots:
     void check_login(const QString &login);
 
 public:
     Model();
     void messageAvailable(Message &&msg) noexcept override;
-    folly::NotificationQueue<Message> *getCurrentQueue();
+    folly::NotificationQueue<Message> *get_queue();
     ~Model() override;
 };
 

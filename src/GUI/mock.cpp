@@ -65,5 +65,5 @@ Mock::Mock(Model *model)
 }
 
 void Mock::send_message(const Message &msg) {
-    model->getCurrentQueue()->putMessage(msg);
+    model->get_queue()->putMessage(msg);
 }

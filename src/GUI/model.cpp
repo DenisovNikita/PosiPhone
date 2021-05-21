@@ -38,17 +38,15 @@ void Model::messageAvailable(Message &&msg) noexcept {
     } else if (msg.type() == Message::Move) {
         set_pos(std::move(msg));
     } else if (msg.type() == Message::AudioSource) {
-        // TODO send to server
+        client.get_queue()->putMessage(msg);
     } else if (msg.type() == Message::AudioResult) {
         // TODO play recording
     } else if (msg.type() == Message::Destroy) {
         remove_item(std::move(msg));
-    } else {
-        std::cerr << "Unknown query\n";
     }
 }
 
-folly::NotificationQueue<Message> *Model::getCurrentQueue() {
+folly::NotificationQueue<Message> *Model::get_queue() {
     return &queue;
 }
 
