@@ -1,6 +1,5 @@
 #include "server.h"
 #include "client.h"
-#include "message.h"
 
 namespace {
 int counter = 0;
@@ -74,11 +73,4 @@ void Server::messageAvailable(Message &&msg) noexcept {
 
 Server::~Server() {
     th.getEventBase()->runInEventBaseThread([this]() { stopConsuming(); });
-}
-
-int main() {
-    Server server;
-    // server work infinitely
-    while (true) {
-    }
 }
