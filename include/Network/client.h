@@ -27,6 +27,9 @@ private:
     folly::ScopedEventBaseThread th;
     const uint32_t max_size = 10'000;
     folly::NotificationQueue<Message> queue;
+    std::unordered_set<std::string> usernames;
+    std::unordered_map<std::int64_t, std::pair<double, double>> crds;
+    std::int64_t my_id = 0;
 
 public:
     explicit Client(Model *model);  // creates a client
