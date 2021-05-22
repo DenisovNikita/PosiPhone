@@ -12,20 +12,19 @@ Model::Model()
     qRegisterMetaType<User>("User");
 
     connect_to_view(&view);
+    connect_to_login_widget(&login_widget);
     connect(this, &Model::close_vew_signal, this, &Model::close_view);
     auto *eventBase = th.getEventBase();
     eventBase->runInEventBaseThread(
         [eventBase, this]() { startConsuming(eventBase, &queue); });
     runner.add("Check connection", [this]() {
-        if (view.is_shown() /* && !client.is_ok_connection()*/) {
+        if (view.is_shown()  && !client.is_ok_connection()) {
             emit close_vew_signal();
         }
         return std::chrono::milliseconds(5000);
     });
 
     login_widget.show();
-//    add_item(Message::create<Message::MessageType::Create>(ID, "a)", 0, 0));
-//    view.show();
 }
 
 void Model::messageAvailable(Message &&msg) noexcept {
@@ -60,6 +59,11 @@ void Model::connect_to_view(View *v) const {
     connect(this, &Model::add_item_signal, v, &View::add_item);
     connect(this, &Model::remove_item_signal, v, &View::remove_item);
     connect(this, &Model::set_pos_signal, v, &View::set_pos);
+}
+
+void Model::connect_to_login_widget(LoginWidget *l) const {
+    connect(l, &LoginWidget::check_login_signal, this, &Model::check_login);
+    connect(this, &Model::login_found, l, &LoginWidget::login_found);
 }
 
 void Model::login_checked(Message &&msg) {

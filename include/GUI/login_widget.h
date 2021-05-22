@@ -12,6 +12,7 @@
 
 class LoginWidget : public QDialog {
     Q_OBJECT
+    friend Model;
     Model *model;
     QLineEdit line_edit;
     QPushButton button;

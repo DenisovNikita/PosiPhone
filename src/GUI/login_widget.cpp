@@ -8,8 +8,6 @@ LoginWidget::LoginWidget(Model *model)
 
     line_edit.setMaxLength(7);
     connect(&button, &QPushButton::clicked, this, &LoginWidget::button_clicked);
-    connect(this, &LoginWidget::check_login_signal, model, &Model::check_login);
-    connect(model, &Model::login_found, this, &LoginWidget::login_found);
 
     auto *layout = new QGridLayout(this);
     layout->addWidget(&line_edit);

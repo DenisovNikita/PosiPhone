@@ -26,7 +26,6 @@ class Model final : public QWidget,
     Q_OBJECT
     std::int64_t ID;
     Client client;
-    friend LoginWidget;
     LoginWidget login_widget;
     View view;
     folly::ScopedEventBaseThread th;
@@ -36,6 +35,7 @@ class Model final : public QWidget,
     folly::ThreadedRepeatingFunctionRunner runner;
 
     void connect_to_view(View *view) const;
+    void connect_to_login_widget(LoginWidget *l) const;
     void login_checked(Message &&msg);
     void add_item(Message &&msg);
     void remove_item(Message &&msg);
