@@ -8,20 +8,22 @@
 class Message {
 public:
     enum MessageType {
+        Empty,
         Connect,
         Create,
         Move,
         AudioSource,
         AudioResult,
-        Destroy
+        Destroy,
+        Check,
     };
 
 private:
     MessageType type_;
-    std::int64_t id_;
+    std::int64_t id_{};
     std::string name_;
-    double x_;
-    double y_;
+    double x_{};
+    double y_{};
 
     Message(MessageType type,
             std::int64_t id,
@@ -33,9 +35,7 @@ private:
                                     std::int64_t id,
                                     double x,
                                     double y);
-    static Message create_by_id_name(MessageType type,
-                                     std::int64_t id,
-                                     std::string name);
+    static Message create_by_name(MessageType type, std::string name);
     static Message create_by_id_name_x_y(MessageType type,
                                          std::int64_t id,
                                          std::string name,
@@ -43,6 +43,7 @@ private:
                                          double y);
 
 public:
+    Message() = default;
     [[nodiscard]] MessageType type() const;
     [[nodiscard]] std::int64_t id() const;
     [[nodiscard]] std::string name() const;
@@ -50,8 +51,13 @@ public:
     [[nodiscard]] double y() const;
     template <MessageType type, typename... Args>
     static Message create(Args &&...args) {
-        if constexpr (type == MessageType::Connect ||
-                      type == MessageType::Create) {
+        if constexpr (type == MessageType::Empty) {
+            return Message();
+        } if constexpr (type == MessageType::Check) {
+            return create_by_id_x_y(type, std::forward<Args>(args)...);
+        } else if constexpr (type == MessageType::Connect) {
+            return create_by_name(type, std::forward<Args>(args)...);
+        } else if constexpr (type == MessageType::Create) {
             return create_by_id_name_x_y(type, std::forward<Args>(args)...);
         } else if constexpr (type == MessageType::Destroy ||
                              type == MessageType::AudioResult) {
@@ -60,6 +66,15 @@ public:
                              type == MessageType::AudioSource) {
             return create_by_id_x_y(type, std::forward<Args>(args)...);
         }
+    }
+
+    template<class Archive>
+    void serialize(Archive & ar, const unsigned int version) {
+        ar & type_;
+        ar & id_;
+        ar & name_;
+        ar & x_;
+        ar & y_;
     }
 };
 

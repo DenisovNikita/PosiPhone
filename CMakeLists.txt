@@ -51,7 +51,8 @@ add_executable(${PROJECT_NAME}
     src/GUI/user.cpp
     src/GUI/view.cpp
     src/Network/client.cpp
-    src/Network/server.cpp
+    src/Network/common_server.cpp
+    server/network_utils.cpp
 )
 
 qt5_use_modules(${PROJECT_NAME} Widgets Multimedia)

@@ -23,9 +23,10 @@ using std::stringstream;
 using std::vector;
 
 class Server : public folly::NotificationQueue<Message>::Consumer {
-    std::unordered_map<std::int64_t, std::unique_ptr<Client>> clients;
+public:
     std::unordered_set<std::string> usernames;
     std::unordered_map<std::int64_t, std::pair<double, double>> crds;
+    std::unordered_map<std::int64_t, std::deque<Message>> messages;
     zmq::context_t context;
     zmq::socket_t socket;
     folly::ScopedEventBaseThread th;
@@ -33,12 +34,15 @@ class Server : public folly::NotificationQueue<Message>::Consumer {
     folly::NotificationQueue<Message> queue;
     //    Mixer *mixer;  // TODO: support mixer integrate
 
-public:
     Server();
 
     folly::NotificationQueue<Message> *get_queue();
 
     void messageAvailable(Message &&msg) noexcept override;
+
+    void send_to_all_clients_except_one(Message &&msg);
+
+    void send_to_one_client(Message &&msg);
 
     ~Server() override;
 };

@@ -13,9 +13,10 @@ find_path(ZMQ_INCLUDE_DIR zmq.h)
 find_library(ZMQ_LIBRARY NAMES zmq)
 
 add_executable(server
-    client.cpp
-    server.cpp
-    server_main.cpp
+        common_client.cpp
+        server.cpp
+        server_main.cpp
+        network_utils.cpp
     ../src/GUI/message.cpp
 )
 

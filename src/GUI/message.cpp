@@ -39,10 +39,8 @@ Message Message::create_by_id_x_y(MessageType type,
     return Message(type, id, {}, x, y);
 }
 
-Message Message::create_by_id_name(MessageType type,
-                                   std::int64_t id,
-                                   std::string name) {
-    return Message(type, id, std::move(name), {}, {});
+Message Message::create_by_name(MessageType type, std::string name) {
+    return Message(type, {}, std::move(name), {}, {});
 }
 
 Message Message::create_by_id_name_x_y(MessageType type,

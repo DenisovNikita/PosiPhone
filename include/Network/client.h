@@ -21,13 +21,12 @@ using std::stringstream;
 class Client : public folly::NotificationQueue<Message>::Consumer {
 private:
     Model *model;
-    Server *server;
     zmq::context_t context;
     zmq::socket_t socket;
     folly::ScopedEventBaseThread th;
     const uint32_t max_size = 10'000;
     folly::NotificationQueue<Message> queue;
-    std::int64_t my_id = 0;
+    std::thread network_thread;
 
 public:
     explicit Client(Model *model);  // creates a client
