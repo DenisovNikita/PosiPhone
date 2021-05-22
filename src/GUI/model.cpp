@@ -12,33 +12,35 @@ Model::Model()
     qRegisterMetaType<User>("User");
 
     connect_to_view(&view);
+    connect(this, &Model::close_vew_signal, this, &Model::close_view);
     auto *eventBase = th.getEventBase();
     eventBase->runInEventBaseThread(
         [eventBase, this]() { startConsuming(eventBase, &queue); });
-
-    connect(this, &Model::disconnection_signal, this, &Model::disconnection);
     runner.add("Check connection", [this]() {
-        //        if (!client.is_ok_connection()) {
-        //            emit disconnection_signal();
-        //        }
-        return std::chrono::seconds(1);
+        if (view.is_shown() /* && !client.is_ok_connection()*/) {
+            emit close_vew_signal();
+        }
+        return std::chrono::milliseconds(5000);
     });
 
     login_widget.show();
-//    add_item(Message::create<Message::MessageType::Create>(ID, "a)", 0, 0),
-//             MyCircle::Type);
+//    add_item(Message::create<Message::MessageType::Create>(ID, "a)", 0, 0));
 //    view.show();
 }
 
 void Model::messageAvailable(Message &&msg) noexcept {
     if (msg.type() == Message::Connect) {
-        login_checked(std::move(msg));
+        if (!client.is_ok_connection()) {
+            close_view();
+        } else {
+            login_checked(std::move(msg));
+        }
     } else if (msg.type() == Message::Create) {
-        add_item(std::move(msg), OtherCircle::Type);
+        add_item(std::move(msg));
     } else if (msg.type() == Message::Move) {
         set_pos(std::move(msg));
     } else if (msg.type() == Message::AudioSource) {
-        client.get_queue()->putMessage(msg);
+        client.get_queue()->putMessage(std::move(msg));
     } else if (msg.type() == Message::AudioResult) {
         // TODO play recording
     } else if (msg.type() == Message::Destroy) {
@@ -48,6 +50,10 @@ void Model::messageAvailable(Message &&msg) noexcept {
 
 folly::NotificationQueue<Message> *Model::get_queue() {
     return &queue;
+}
+
+std::int64_t Model::get_id() const {
+    return ID;
 }
 
 void Model::connect_to_view(View *v) const {
@@ -61,18 +67,22 @@ void Model::login_checked(Message &&msg) {
         emit login_found();
     } else {
         login_widget.close();
-        add_item(Message::create<Message::MessageType::Create>(ID, msg.name(), 0, 0), MyCircle::Type);
+        ID = msg.id();
+        add_item(Message::create<Message::MessageType::Create>(ID, msg.name(),
+                                                               0, 0));
         view.show();
     }
 }
 
-void Model::add_item(Message &&msg, int type) {
-    if (msg.id() == ID) {
-        client.get_queue()->putMessage(msg);
-    }
+void Model::add_item(Message &&msg) {
     users[msg.id()] =
         std::make_unique<User>(msg.id(), msg.name(), msg.x(), msg.y());
-    emit add_item_signal(*users[msg.id()], type);
+    if (msg.id() == ID) {
+        emit add_item_signal(*users[msg.id()], MyCircle::Type);
+    } else {
+        emit add_item_signal(*users[msg.id()], OtherCircle::Type);
+    }
+
 }
 
 void Model::remove_item(Message &&msg) {
@@ -84,7 +94,7 @@ void Model::remove_item(Message &&msg) {
         users.erase(user);
         emit remove_item_signal(msg.id());
     } else {
-        std::cerr << "Trying to remove unknown circle\n";
+        std::cerr << "Trying to remove unknown circle" << std::endl;
     }
 }
 
@@ -97,13 +107,23 @@ void Model::set_pos(Message &&msg) {
         user->second->set_pos(msg.x(), msg.y());
         emit set_pos_signal(msg.id(), msg.x(), msg.y());
     } else {
-        std::cerr << "Trying to move unknown circle\n";
+        std::cerr << "Trying to move unknown circle" << std::endl;
     }
 }
 
-void Model::disconnection() {
-//    QMessageBox::warning(this, "Warning", "No internet connection./n You have to re-login.");
-    // TODO show warning widget
+void Model::open_view() {
+    login_widget.close();
+    view.show();
+}
+
+void Model::close_view() {
+    view.close();
+    login_widget.show();
+    QMessageBox::warning(this, "Warning",
+                         "No internet connection"
+                         "\nYou have to re-login");
+    remove_item(Message::create<Message::MessageType::Destroy>(ID));
+    ID = 0;
 }
 
 void Model::check_login(const QString &login) {
@@ -121,16 +141,12 @@ void Model::check_login(const QString &login) {
     if (found) {
         emit login_found();
     } else {
-        login_widget.close();
-        add_item(Message::create<Message::MessageType::Create>(ID, name, 0, 0),
-                 MyCircle::Type);
-        view.show();
+        add_item(Message::create<Message::MessageType::Create>(ID, name, 0, 0));
+        open_view();
     }
 }
 
 Model::~Model() {
-    client.get_queue()->putMessage(
-        Message::create<Message::MessageType::Destroy>(ID));
     runner.stop();
     th.getEventBase()->runInEventBaseThread([this]() { stopConsuming(); });
 }

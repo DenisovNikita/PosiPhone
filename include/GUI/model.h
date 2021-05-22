@@ -5,8 +5,8 @@
 #include <folly/io/async/NotificationQueue.h>
 #include <folly/io/async/ScopedEventBaseThread.h>
 #include <QMessageBox>
-#include <QWidget>
 #include <QString>
+#include <QWidget>
 #include <chrono>
 #include <cstdint>
 #include <iosfwd>
@@ -37,7 +37,7 @@ class Model final : public QWidget,
 
     void connect_to_view(View *view) const;
     void login_checked(Message &&msg);
-    void add_item(Message &&msg, int type);
+    void add_item(Message &&msg);
     void remove_item(Message &&msg);
     void set_pos(Message &&msg);
 
@@ -45,17 +45,19 @@ signals:
     void add_item_signal(const User &user, int type);
     void remove_item_signal(std::int64_t id);
     void set_pos_signal(std::int64_t id, double x, double y);
-    void disconnection_signal();
+    void close_vew_signal();
     void login_found();
 
 private slots:
-    void disconnection();
+    void close_view();
+    void open_view();
     void check_login(const QString &login);
 
 public:
     Model();
     void messageAvailable(Message &&msg) noexcept override;
     folly::NotificationQueue<Message> *get_queue();
+    std::int64_t get_id() const;
     ~Model() override;
 };
 
