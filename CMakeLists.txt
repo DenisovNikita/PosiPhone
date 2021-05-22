@@ -34,7 +34,12 @@ add_executable(${PROJECT_NAME}
     include/GUI/producer.h
     include/GUI/user.h
     include/GUI/view.h
+    include/Network/client.h
+    include/Network/client_fwd.h
+    include/Network/server.h
+    include/Network/server_fwd.h
     include/GUI/view.ui
+    resources/resources.qrc
     src/GUI/audio.cpp
     src/GUI/login_widget.cpp
     src/GUI/main.cpp
@@ -45,11 +50,8 @@ add_executable(${PROJECT_NAME}
     src/GUI/producer.cpp
     src/GUI/user.cpp
     src/GUI/view.cpp
-    resources/resources.qrc
-
-    include/Network/client.h
-    include/Network/server.h
     src/Network/client.cpp
+    src/Network/server.cpp
 )
 
 qt5_use_modules(${PROJECT_NAME} Widgets Multimedia)
@@ -57,14 +59,14 @@ qt5_use_modules(${PROJECT_NAME} Widgets Multimedia)
 target_include_directories(${PROJECT_NAME} PRIVATE
     include/GUI/
     include/Network/
-    ${FOLLY_INCLUDE_DIR}
     ${Boost_INCLUDE_DIRS}
+    ${FOLLY_INCLUDE_DIR}
     ${ZMQ_INCLUDE_DIR}
 )
 
 target_link_libraries(${PROJECT_NAME}
-    ${FOLLY_LIBRARIES}
     ${Boost_LIBRARIES}
+    ${FOLLY_LIBRARIES}
     ${QT_LIBRARIES}
     ${ZMQ_LIBRARY}
 )
