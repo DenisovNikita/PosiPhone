@@ -27,11 +27,14 @@ Client::Client(Model *m)
     //  write error messages to users
     assert(set_connection(socket) == 0);
 
-    /*network_thread = std::thread([&]() {
+    network_thread = std::thread([&]() {
         zmq::context_t local_context(1);
         zmq::socket_t local_socket(local_context, ZMQ_REQ);
         local_socket.connect(server_name);
         auto first_message = receive(local_socket);
+        while (first_message.type() == Message::MessageType::Empty) {
+            first_message = receive(local_socket);
+        }
         assert(first_message.type() == Message::MessageType::Connect);
         std::int64_t my_id = first_message.id();
         while (true) {
@@ -50,7 +53,7 @@ Client::Client(Model *m)
                 assert(false);  // must not be other message types
             }
         }
-    });*/
+    });
 }
 
 void Client::send_to_server(Message &&msg) {
@@ -63,10 +66,9 @@ int Client::connect_to_server() {
 
 void Client::messageAvailable(Message &&msg) noexcept {
     if (msg.type() == Message::MessageType::Connect ||
-        msg.type() == Message::MessageType::AudioSource) {
-        send_to_server(std::move(msg));
-    } else if (msg.type() == Message::MessageType::Move ||
-               msg.type() == Message::MessageType::Destroy) {
+        msg.type() == Message::MessageType::AudioSource ||
+        msg.type() == Message::MessageType::Move ||
+        msg.type() == Message::MessageType::Destroy) {
         send_to_server(std::move(msg));
     } else {
         assert(false);  // must not be other MessageType from model to client
