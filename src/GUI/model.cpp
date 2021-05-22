@@ -70,11 +70,10 @@ void Model::login_checked(Message &&msg) {
     if (msg.id() == -1) {
         emit login_found();
     } else {
-        login_widget.close();
         ID = msg.id();
         add_item(Message::create<Message::MessageType::Create>(ID, msg.name(),
                                                                0, 0));
-        view.show();
+        open_view();
     }
 }
 
@@ -131,23 +130,7 @@ void Model::close_view() {
 }
 
 void Model::check_login(const QString &login) {
-    bool found = false;
-    std::string name = login.toStdString();
-    // TODO ask server
-//    client.get_queue()->putMessage(
-//        Message::create<Message::MessageType::Connect>(ID, name, 0, 0));
-    for (auto &[id, user] : users) {
-        if (user->name() == name) {
-            found = true;
-            break;
-        }
-    }
-    if (found) {
-        emit login_found();
-    } else {
-        add_item(Message::create<Message::MessageType::Create>(ID, name, 0, 0));
-        open_view();
-    }
+    client.get_queue()->putMessage(Message::create<Message::Connect>(login.toStdString()));
 }
 
 Model::~Model() {
