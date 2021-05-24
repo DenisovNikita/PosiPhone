@@ -77,7 +77,7 @@ std::vector<AudioFile<float> > split(AudioFile<float> file, double dur) {
     std::vector<AudioFile<float> > splitted;
     splitted.resize(ceil(file.getLengthInSeconds() / dur));
     //std::cout << splitted.size() << std::endl;
-    for (int i = 0; i < file.getLengthInSeconds() / double(ceil(dur)); i++) {
+    for (int i = 0; i < splitted.size(); i++) {
 
         splitted[i].setAudioBufferSize(file.getNumChannels(), ceil(dur * file.getSampleRate()));
 
@@ -192,6 +192,7 @@ double count_coef(double x1, double y1, double x2, double y2){
 std::vector<Message> try_to_mix(std::vector<Message>& vec){
     std::vector<Message> result = vec;
     for(auto &r:result){
+        std::cout << r.id << ' ' << r.room_id << ' ' << r.data.samples[0].size() << std::endl;
         for(auto v:vec){
             if(v.id == r.id){
                 r.data.addAudioBuffer(v.data.samples, -1);
@@ -201,6 +202,7 @@ std::vector<Message> try_to_mix(std::vector<Message>& vec){
             }
         }
     }
+    std::cout << std::endl;
     return result;
 }
 
@@ -215,9 +217,11 @@ int main() {
     AudioFile<float> zhak;
     zhak.load(inputFilePath + "/sound_samples/Zhak-Fresco-pro-bidlo.wav");
     std::vector<AudioFile<float>> vec1 = split(zhak, 0.05);
-    //for(int i = 0; i<vec.size(); i++){
-    //vec[i].save(create_path(inputFilePath + "/splitted/output", i));
-    //}
+    for(int i = 0; i<vec.size(); i++){
+        vec[i].save(create_path(inputFilePath + "/splitted/output", i));
+    }
+    AudioFile<float> joint11 = join(vec);
+    joint11.save(inputFilePath + "/mixed_files/output_kek.wav");
 
     folly::EventBase eventBase;
     QueueConsumer consumer;
@@ -233,11 +237,11 @@ int main() {
     consumer.startConsuming(&eventBase, &queue);
     long long cnt = 0, ticker = cur_time() + 100;
     int counter = 0;
-    while (cnt < 500) {
-        //usleep(NORMAL_DELAY*10);
+    while (cnt < 50) {
+        usleep(NORMAL_DELAY*1000);
         long long ms = cur_time();
-        queue.putMessage(Message{-50.0+static_cast<double>(cnt)/5, 0, 1, 1, ms+cnt*50, vec[cnt]});
-        queue.putMessage(Message{1, 1, 2, 1, ms+cnt*50, vec1[cnt]});
+        queue.putMessage(Message{-5.0+static_cast<double>(cnt)/20.0, 1, 1, int(cnt), ms, vec[cnt]});
+        queue.putMessage(Message{1, 1, 2, int(cnt), ms, vec1[cnt]});
         queue.putMessage(Message{-1, -1, -1, -1, 0, vec1[cnt]});
         cnt++;
         eventBase.loop();
@@ -245,9 +249,6 @@ int main() {
             //std::cout << consumer.messages.back().id << std::endl;
             if (consumer.messages.back().id != -1) {
                 M[consumer.messages.back().id].insert(consumer.messages.back());
-                if (M[consumer.messages.back().id].size() == 1) {
-                    cnt++;
-                }
             }
             consumer.messages.pop_back();
         }
@@ -255,11 +256,11 @@ int main() {
         consumer.startConsuming(&eventBase, &queue);
         //std::cout << cur_time() << ' ' << ticker << '\n';
         if(cur_time() >= ticker){
-            std::cout << "ticker in progress\n";
+            //std::cout << "ticker in progress\n";
             std::vector<Message> input;
             for(auto & m : M){
                 while(!m.empty() && m.begin()->time < ticker - 100){
-                    std::cout << m.begin()->time << std::endl;
+                    //std::cout << m.begin()->time << std::endl;
                     m.erase(m.begin());
                 }
                 if(!m.empty() && m.begin()->time >= ticker - 100 && m.begin()->time < ticker - 50){
@@ -270,7 +271,7 @@ int main() {
                 std::vector<Message> output = try_to_mix(input);
                 for (int i = 0; i < output.size(); i++) {
                     example[i].push_back(output[i].data);
-                    //std::cout << "pushed to example[" << i << "]\n";
+                    std::cout << "pushed to example[" << i << "]\n";
                     //output[i].data.save(create_path(add_number_to_name(inputFilePath + "/splitted", i) + "/output", counter));
                 }
             }
@@ -279,15 +280,15 @@ int main() {
         }
     }
     //std::cout << cur_time() << ' ' << M[1].size() << ' ' << M[2].size() << '\n';
-    while(counter < 490){
+    while(counter < 40){
         if(cur_time() >= ticker){
-            //std::cout << "ticker " << counter << " in progress\n";
+            std::cout << "ticker " << counter << " in progress\n";
             std::vector<Message> input;
             for(auto & m : M){
-                while(!m.empty() && m.begin()->time < ticker - 100){
+                while(!m.empty() && m.begin()->time < ticker - 2*NORMAL_DELAY){
                     m.erase(m.begin());
                 }
-                if(!m.empty() && m.begin()->time >= ticker - 100 && m.begin()->time < ticker - 50){
+                if(!m.empty() && m.begin()->time >= ticker - 2*NORMAL_DELAY && m.begin()->time < ticker - NORMAL_DELAY){
                     //std::cout << m.begin()->time << std::endl;
                     input.push_back(*m.begin());
                     m.erase(m.begin());
@@ -297,7 +298,7 @@ int main() {
                 std::vector<Message> output = try_to_mix(input);
                 for (int i = 0; i < output.size(); i++) {
                     example[i].push_back(output[i].data);
-                    //std::cout << "pushed to example[" << i << "]\n";
+                    std::cout << "pushed to example[" << i << "]\n";
                     //output[i].data.save(create_path(add_number_to_name(inputFilePath + "/splitted", i) + "/output", counter));
                 }
             }
