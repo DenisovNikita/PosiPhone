@@ -27,13 +27,15 @@ private:
     const uint32_t max_size = 10'000;
     folly::NotificationQueue<Message> queue;
     std::thread network_thread;
+    std::int64_t my_id = -1;
+    std::mutex m;
 
 public:
     explicit Client(Model *model);  // creates a client
     int connect_to_server();        // returns error_code
     void messageAvailable(Message &&msg) noexcept override;
     bool is_ok_connection();
-    void send_to_server(Message &&msg);
+    Message send_to_server(Message &&msg);
 
     folly::NotificationQueue<Message> *get_queue();
 
