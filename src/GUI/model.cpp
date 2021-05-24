@@ -18,7 +18,7 @@ Model::Model()
     eventBase->runInEventBaseThread(
         [eventBase, this]() { startConsuming(eventBase, &queue); });
     runner.add("Check connection", [this]() {
-        if (view.is_shown()  && !client.is_ok_connection()) {
+        if (view.is_shown() && !client.is_ok_connection()) {
             emit close_vew_signal();
         }
         return std::chrono::milliseconds(5000);
@@ -71,7 +71,7 @@ void Model::login_checked(Message &&msg) {
         emit login_found();
     } else {
         ID = msg.id();
-        add_item(Message::create<Message::MessageType::Create>(ID, msg.name(),
+        queue.putMessage(Message::create<Message::MessageType::Create>(ID, msg.name(),
                                                                0, 0));
         open_view();
     }
@@ -85,7 +85,6 @@ void Model::add_item(Message &&msg) {
     } else {
         emit add_item_signal(*users[msg.id()], OtherCircle::Type);
     }
-
 }
 
 void Model::remove_item(Message &&msg) {
@@ -115,7 +114,7 @@ void Model::set_pos(Message &&msg) {
 }
 
 void Model::open_view() {
-    login_widget.close();
+//    login_widget.close();
     view.show();
 }
 
@@ -130,7 +129,8 @@ void Model::close_view() {
 }
 
 void Model::check_login(const QString &login) {
-    client.get_queue()->putMessage(Message::create<Message::Connect>(login.toStdString()));
+    client.get_queue()->putMessage(
+        Message::create<Message::Connect>(login.toStdString()));
 }
 
 Model::~Model() {
