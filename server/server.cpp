@@ -7,7 +7,7 @@ Server::Server()
     auto *eventBase = th.getEventBase();
     eventBase->runInEventBaseThread(
         [eventBase, this]() { startConsuming(eventBase, &queue); });
-    socket.bind("tcp://*:4444");
+    socket.bind("tcp://*:" + std::to_string(port));
 }
 
 folly::NotificationQueue<Message> *Server::get_queue() {

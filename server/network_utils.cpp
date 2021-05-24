@@ -28,4 +28,7 @@ Message receive(zmq::socket_t &socket) {
     return requestMessage;
 }
 
-
+Message send_and_receive(zmq::socket_t &socket, Message msg) {
+    send(socket, std::move(msg));
+    return receive(socket);
+}

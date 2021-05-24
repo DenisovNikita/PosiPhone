@@ -4,6 +4,8 @@ project(server LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+add_compile_options(-static)
+
 find_package(folly REQUIRED)
 find_package(gflags REQUIRED)
 find_package(Threads REQUIRED)
