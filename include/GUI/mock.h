@@ -9,7 +9,10 @@
 class Mock {
     Model *model;
     folly::ScopedEventBaseThread t1, t2;
-    const int N1 = 150, N2 = 75, TIME = 10, D = 25;
+    const int N1 = 150;
+    const int N2 = 75;
+    const int TIME = 10;
+    const int D = 25;
 
     void send_message(const Message &msg);
 

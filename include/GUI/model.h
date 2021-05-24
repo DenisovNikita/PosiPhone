@@ -34,6 +34,14 @@ class Model final : public QWidget,
     std::unordered_map<std::int64_t, std::unique_ptr<User>> users;
     folly::ThreadedRepeatingFunctionRunner runner;
 
+public:
+    Model();
+    void messageAvailable(Message &&msg) noexcept override;
+    folly::NotificationQueue<Message> *get_queue();
+    std::int64_t get_id() const;
+    ~Model() override;
+
+private:
     void connect_to_view(View *view) const;
     void connect_to_login_widget(LoginWidget *l) const;
     void login_checked(Message &&msg);
@@ -52,13 +60,6 @@ private slots:
     void close_view();
     void open_view();
     void check_login(const QString &login);
-
-public:
-    Model();
-    void messageAvailable(Message &&msg) noexcept override;
-    folly::NotificationQueue<Message> *get_queue();
-    std::int64_t get_id() const;
-    ~Model() override;
 };
 
 #endif  // GUI_MODEL_H
