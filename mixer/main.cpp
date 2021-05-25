@@ -186,7 +186,7 @@ long long cur_time() {
 }
 
 double count_coef(double x1, double y1, double x2, double y2){
-    return 1.0/fmax(1.0, sqrt((x1-x2)*(x1-x2) + (y1 - y2) * (y1 - y2) ) );
+    return pow(1.0/fmax(1.0, sqrt((x1-x2)*(x1-x2) + (y1 - y2) * (y1 - y2) ) );
 }
 
 std::vector<Message> try_to_mix(std::vector<Message>& vec){
