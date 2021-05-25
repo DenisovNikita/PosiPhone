@@ -27,7 +27,6 @@ private:
     const uint32_t max_size = 10'000;
     folly::NotificationQueue<Message> queue;
     std::thread network_thread;
-    std::int64_t my_id = -1;
     std::mutex m;
 
 public:

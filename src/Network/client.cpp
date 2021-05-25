@@ -31,12 +31,12 @@ Client::Client(Model *m)
         zmq::context_t local_context(1);
         zmq::socket_t local_socket(local_context, ZMQ_REQ);
         local_socket.connect(server_name);
-        while (my_id == -1) {
+        while (model->get_id() == -1) {
         }
-        assert(my_id != -1);
+        assert(model->get_id() != -1);
         while (true) {
             Message pullRequest =
-                Message::create<Message::MessageType::Check>(my_id, 2, 2);
+                Message::create<Message::MessageType::Check>(model->get_id(), 2, 2);
             send(local_socket, std::move(pullRequest));
             auto result = receive(local_socket);
             std::cerr << "client received: " << result.type() << std::endl;
@@ -52,6 +52,7 @@ Client::Client(Model *m)
             }
         }
     });
+    std::cerr << "client created" << std::endl;
 }
 
 Message Client::send_to_server(Message &&msg) {
@@ -73,7 +74,6 @@ void Client::messageAvailable(Message &&msg) noexcept {
         auto res = send_to_server(std::move(msg));
         if (res.type() == Message::MessageType::Connect) {
             std::cerr << "new_id = " << res.id() << std::endl;
-            my_id = res.id();
             model->get_queue()->putMessage(std::move(res));
         }
     } else {
