@@ -53,12 +53,13 @@ signals:
     void add_item_signal(const User &user, int type);
     void remove_item_signal(std::int64_t id);
     void set_pos_signal(std::int64_t id, double x, double y);
-    void close_vew_signal();
-    void login_found();
+    void open_view_signal();
+    void close_view_signal();
+    void login_found_signal();
 
 private slots:
-    void close_view();
     void open_view();
+    void close_view();
     void check_login(const QString &login);
 };
 
