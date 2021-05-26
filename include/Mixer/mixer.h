@@ -21,45 +21,9 @@
 
 namespace mixer {
 
-std::vector<AudioFile<float>> split(AudioFile<float> file, double dur) {
-    std::vector<AudioFile<float>> splitted;
-    splitted.resize(ceil(file.getLengthInSeconds() / dur));
-    for (int i = 0; i < splitted.size(); i++) {
-        splitted[i].setAudioBufferSize(file.getNumChannels(),
-                                       ceil(dur * file.getSampleRate()));
-        for (int k = 0; k < file.getNumChannels(); k++) {
-            for (int j = 0; j < ceil(dur * file.getSampleRate()); j++) {
-                splitted[i].samples[k][j] +=
-                    file.samples[k][j + i * ceil(dur * file.getSampleRate())];
-            }
-        }
-    }
-    return splitted;
-}
+std::vector<AudioFile<float>> split(AudioFile<float> file, double dur);
 
-AudioFile<float> join(const std::vector<AudioFile<float>> &v) {
-    AudioFile<float> joint;
-    int channels = 0, len = 0, numSamples = 0;
-    for (const auto &c : v) {
-        channels = std::max(channels, c.getNumChannels());
-        len += c.samples[0].size();
-        numSamples += c.getNumSamplesPerChannel();
-    }
-    joint.samples.resize(channels);
-    for (int i = 0; i < channels; i++) {
-        joint.samples[i].resize(len);
-    }
-    len = 0;
-    for (const auto &c : v) {
-        for (int k = 0; k < c.getNumChannels(); k++) {
-            for (int i = 0; i < c.samples[k].size(); i++) {
-                joint.samples[k][i + len] = c.samples[k][i];
-            }
-        }
-        len += c.samples[0].size();
-    }
-    return joint;
-}
+AudioFile<float> join(const std::vector<AudioFile<float>> &v);
 
 long long cur_time() {
     return std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -93,20 +57,7 @@ struct Message {
           data(std::move(data_)){};
 };
 
-std::vector<Message> try_to_mix(std::vector<Message> &vec) {
-    std::vector<Message> result = vec;
-    for (auto &r : result) {
-        for (auto v : vec) {
-            if (v.id == r.id) {
-                r.data.addAudioBuffer(v.data.samples, -1);
-            } else {
-                r.data.addAudioBuffer(v.data.samples,
-                                      count_coef(r.x, r.y, v.x, v.y));
-            }
-        }
-    }
-    return result;
-}
+std::vector<Message> try_to_mix(std::vector<Message> &vec);
 
 class QueueConsumer : public folly::NotificationQueue<Message>::Consumer {
 public:
@@ -129,13 +80,15 @@ struct time_compare {
     };
 };
 
-struct Mixer {
+class Mixer {
+private:
     std::vector<std::multiset<Message, time_compare>> M;
     AudioFile<float> sample;
     folly::EventBase eventBase;
     QueueConsumer consumer;
     folly::NotificationQueue<Message> queue;
 
+public:
     Mixer() {
         consumer.fn = [&](const Message &msg) {
             if (msg.id == -1) {
