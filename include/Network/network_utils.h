@@ -7,7 +7,7 @@
 #include "message.h"
 #include "server.h"
 
-static const int port = 12345;
+static const int port = 1234;
 
 void send(zmq::socket_t &socket, Message &&msg);
 

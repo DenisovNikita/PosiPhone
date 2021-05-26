@@ -14,6 +14,7 @@
 #include <unordered_set>
 #include <vector>
 #include <zmq.hpp>
+#include <set>
 #include "client_fwd.h"
 #include "message.h"
 
@@ -26,7 +27,10 @@ class Server : public folly::NotificationQueue<Message>::Consumer {
 public:
     std::unordered_set<std::string> usernames;
     std::unordered_map<std::int64_t, std::pair<double, double>> crds;
+    std::unordered_map<std::int64_t, std::string> name_by_id;
     std::unordered_map<std::int64_t, std::deque<Message>> messages;
+    std::set<std::pair<int, std::int64_t>> last_time_for_all;
+    std::unordered_map<std::int64_t, int> last_time_by_id;
     zmq::context_t context;
     zmq::socket_t socket;
     folly::ScopedEventBaseThread th;

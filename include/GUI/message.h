@@ -8,7 +8,7 @@
 class Message {
 public:
     enum MessageType {
-        Empty,
+        Empty = 0,
         Connect,
         Create,
         Move,
@@ -35,7 +35,6 @@ private:
                                     std::int64_t id,
                                     double x,
                                     double y);
-    static Message create_by_name(MessageType type, std::string name);
     static Message create_by_id_name_x_y(MessageType type,
                                          std::int64_t id,
                                          std::string name,
@@ -53,10 +52,10 @@ public:
     static Message create(Args &&...args) {
         if constexpr (type == MessageType::Empty) {
             return Message();
-        } if constexpr (type == MessageType::Check) {
+        } else if constexpr (type == MessageType::Check) {
             return create_by_id_x_y(type, std::forward<Args>(args)...);
         } else if constexpr (type == MessageType::Connect) {
-            return create_by_name(type, std::forward<Args>(args)...);
+            return create_by_id_name_x_y(type, std::forward<Args>(args)...);
         } else if constexpr (type == MessageType::Create) {
             return create_by_id_name_x_y(type, std::forward<Args>(args)...);
         } else if constexpr (type == MessageType::Destroy ||
