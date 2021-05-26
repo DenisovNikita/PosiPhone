@@ -1,6 +1,7 @@
 #include "server.h"
 #include "client.h"
 #include "network_utils.h"
+#include <glog/logging.h>
 
 Server::Server()
     : context(1), socket(context, ZMQ_REP), th("server"), queue(max_size) {
@@ -29,6 +30,7 @@ void Server::messageAvailable(Message &&msg) noexcept {
 
 void Server::send_to_all_clients_except_one(Message &&msg) {
     //    TODO: zmq_router or something else
+    LOG(INFO) << "send_to_all: from_id = " << msg.id() << "\n";
     for (auto &[id, v] : messages) {
         if (msg.id() != id) {
             v.push_back(msg);

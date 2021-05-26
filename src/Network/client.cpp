@@ -1,4 +1,5 @@
 #include "client.h"
+#include <unordered_map>
 #include "model.h"
 #include "network_utils.h"
 #include "server.h"
@@ -10,6 +11,17 @@ int set_connection(zmq::socket_t &socket) {
     socket.connect(server_name);
     return 0;
 }
+
+std::unordered_map<int, std::string> to_string = {
+    {Message::MessageType::Empty, "Empty"},
+    {Message::MessageType::Connect, "Connect"},
+    {Message::MessageType::Create, "Create"},
+    {Message::MessageType::Move, "Move"},
+    {Message::MessageType::AudioSource, "AudioSource"},
+    {Message::MessageType::AudioResult, "AudioResult"},
+    {Message::MessageType::Destroy, "Destroy"},
+    {Message::MessageType::Check, "Check"},
+};
 
 }  // namespace
 
@@ -35,15 +47,16 @@ Client::Client(Model *m)
         }
         assert(model->get_id() != -1);
         while (true) {
-            Message pullRequest =
-                Message::create<Message::MessageType::Check>(model->get_id(), 2, 2);
+            Message pullRequest = Message::create<Message::MessageType::Check>(
+                model->get_id(), 2, 2);
             send(local_socket, std::move(pullRequest));
             auto result = receive(local_socket);
-            std::cerr << "client received: " << result.type() << std::endl;
             if (result.type() == Message::MessageType::Create ||
                 result.type() == Message::MessageType::Move ||
                 result.type() == Message::MessageType::AudioResult ||
                 result.type() == Message::MessageType::Destroy) {
+                LOG(INFO) << "client received from another_client: "
+                          << to_string[result.type()] << std::endl;
                 model->get_queue()->putMessage(std::move(result));
             } else if (result.type() == Message::MessageType::Empty) {
                 continue;
@@ -57,7 +70,10 @@ Client::Client(Model *m)
 
 Message Client::send_to_server(Message &&msg) {
     auto res = send_and_receive(socket, std::move(msg));
-    std::cerr << "res.type() = " << res.type() << std::endl;
+    if (res.type() != Message::MessageType::Empty) {
+        std::cerr << "client received reply for server request: "
+                  << to_string[res.type()] << std::endl;
+    }
     return res;
 }
 
@@ -72,6 +88,10 @@ void Client::messageAvailable(Message &&msg) noexcept {
         msg.type() == Message::MessageType::Move ||
         msg.type() == Message::MessageType::Destroy) {
         auto res = send_to_server(std::move(msg));
+        if (res.type() != Message::MessageType::Empty) {
+            std::cerr << "client received from model: " << to_string[res.type()]
+                      << std::endl;
+        }
         if (res.type() == Message::MessageType::Connect) {
             std::cerr << "new_id = " << res.id() << std::endl;
             model->get_queue()->putMessage(std::move(res));

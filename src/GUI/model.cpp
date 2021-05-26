@@ -1,4 +1,5 @@
 #include "model.h"
+#include <glog/logging.h>
 #include <iostream>
 
 Model::Model()
@@ -29,6 +30,7 @@ Model::Model()
 }
 
 void Model::messageAvailable(Message &&msg) noexcept {
+    LOG(INFO) << "got " << msg.type() << " message\n";
     if (msg.type() == Message::Connect) {
         if (!client.is_ok_connection()) {
             emit close_view_signal();
@@ -69,7 +71,7 @@ void Model::connect_to_login_widget(LoginWidget *l) const {
 
 void Model::check_login(const QString &login) {
     client.get_queue()->putMessage(
-        Message::create<Message::Connect>(login.toStdString()));
+        Message::create<Message::Connect>(0, login.toStdString(), 0, 0));
 }
 
 void Model::login_checked(Message &&msg) {
