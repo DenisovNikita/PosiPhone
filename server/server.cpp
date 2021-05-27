@@ -35,29 +35,20 @@ int main(int argc, char *argv[]) {
                 server_module.last_time_by_id[msg.id()] = cur_int;
             }
 
-            if (msg.type() != Message::MessageType::Check || msg.x() != 2 ||
-                msg.y() != 2) {
+            if (msg.type() != Message::MessageType::Request_new_info) {
                 LOG(INFO) << "server received from client: "
                           << to_string[msg.type()] << "\n";
             }
-            if (msg.type() == Message::MessageType::Check) {
-                if (msg.x() == 0 && msg.y() == 0) {
-                    Message new_msg =
-                        Message::create<Message::MessageType::Check>(msg.id(),
-                                                                     1, 0);
-                    server_module.send_to_one_client(std::move(new_msg));
-                } else if (msg.x() == 2 && msg.y() == 2) {
-                    if (server_module.messages[msg.id()].empty()) {
-                        server_module.send_to_one_client(
-                            Message::create<Message::MessageType::Empty>());
-                    } else {
-                        auto response =
-                            server_module.messages[msg.id()].front();
-                        server_module.send_to_one_client(std::move(response));
-                        server_module.messages[msg.id()].pop_front();
-                    }
+            if (msg.type() == Message::MessageType::Check_connection) {
+                server_module.send_to_one_client(std::move(msg));
+            } else if (msg.type() == Message::MessageType::Request_new_info) {
+                if (server_module.messages[msg.id()].empty()) {
+                    server_module.send_to_one_client(
+                        Message::create<Message::MessageType::Empty>());
                 } else {
-                    assert(false);
+                    auto response = server_module.messages[msg.id()].front();
+                    server_module.send_to_one_client(std::move(response));
+                    server_module.messages[msg.id()].pop_front();
                 }
             } else if (msg.type() ==
                        Message::MessageType::

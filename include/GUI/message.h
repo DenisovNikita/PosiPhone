@@ -16,7 +16,8 @@ public:
         AudioSource,
         AudioResult,
         Destroy,
-        Check,
+        Check_connection,
+        Request_new_info,
     };
 
 private:
@@ -72,8 +73,7 @@ public:
     static Message create(Args &&...args) {
         if constexpr (type == MessageType::Empty) {
             return Message();
-        } else if constexpr (type == MessageType::Check ||
-                             type == MessageType::Move) {
+        } else if constexpr (type == MessageType::Move) {
             return create_by_id_x_y(type, std::forward<Args>(args)...);
         } else if constexpr (type == MessageType::Connect ||
                              type == MessageType::Create) {
@@ -82,7 +82,9 @@ public:
                              type == MessageType::AudioSource) {
             return create_by_id_data(type, std::forward<Args>(args)...);
             // TODO pass coords to AudioSource
-        } else if constexpr (type == MessageType::Destroy) {
+        } else if constexpr (type == MessageType::Destroy ||
+                             type == MessageType::Check_connection ||
+                             type == MessageType::Request_new_info) {
             return create_by_id(type, std::forward<Args>(args)...);
         }
     }

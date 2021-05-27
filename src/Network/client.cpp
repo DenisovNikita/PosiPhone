@@ -41,9 +41,9 @@ Client::Client(Model *m)
         int my_id = model->get_id();
         assert(my_id != 0);
         while (true) {
-//            std::this_thread::sleep_for(std::chrono::milliseconds(TIME_SLEEP));
-            Message pullRequest = Message::create<Message::MessageType::Check>(
-                my_id, 2, 2);
+            //            std::this_thread::sleep_for(std::chrono::milliseconds(TIME_SLEEP));
+            Message pullRequest =
+                Message::create<Message::MessageType::Request_new_info>(my_id);
             send(local_socket, std::move(pullRequest));
             auto result = receive(local_socket);
             if (result.type() != Message::MessageType::Empty) {
@@ -108,10 +108,10 @@ bool Client::is_ok_connection() {
     if (model->get_id() == 0) {
         return true;
     }
-    Message request =
-        Message::create<Message::MessageType::Check>(model->get_id(), 0, 0);
+    Message request = Message::create<Message::MessageType::Check_connection>(
+        model->get_id());
     Message response = send_and_receive(socket, std::move(request));
-    return response.x() == 1;  // crutch
+    return response.type() == Message::MessageType::Check_connection;
 }
 
 Client::~Client() {

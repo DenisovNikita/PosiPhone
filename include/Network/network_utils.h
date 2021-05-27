@@ -19,7 +19,8 @@ static std::unordered_map<int, std::string> to_string = {
     {Message::MessageType::AudioSource, "AudioSource"},
     {Message::MessageType::AudioResult, "AudioResult"},
     {Message::MessageType::Destroy, "Destroy"},
-    {Message::MessageType::Check, "Check"},
+    {Message::MessageType::Check_connection, "Check connection"},
+    {Message::MessageType::Request_new_info, "Request new info"},
 };
 
 void send(zmq::socket_t &socket, Message &&msg);
