@@ -16,14 +16,11 @@
 #include <vector>
 #include "mixer/AudioFile/AudioFile.h"
 
-#define NORMAL_DELAY 50
-#define NUMBER_OF_ID 5
-
 namespace mixer {
 
 std::vector<AudioFile<float>> split(AudioFile<float> file, double dur);
 
-AudioFile<float> join(const std::vector<AudioFile<float>> &v);
+AudioFile<float> join(const std::vector<AudioFile<float>> &separate);
 
 long long cur_time() {
     return std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -87,15 +84,18 @@ private:
     folly::EventBase eventBase;
     QueueConsumer consumer;
     folly::NotificationQueue<Message> queue;
+    long long normal_delay = 0, number_id = 0;
 
 public:
     Mixer() {
+        std::ifstream config("config.txt");
+        config >> normal_delay >> number_id;
         consumer.fn = [&](const Message &msg) {
             if (msg.id == -1) {
                 consumer.stopConsuming();
             }
         };
-        M.resize(NUMBER_OF_ID);
+        M.resize(number_id);
         sample.samples.resize(1);
         sample.samples[0].resize(2, 0);
     }
@@ -117,11 +117,11 @@ public:
         long long ticker = cur_time();
         std::vector<Message> input;
         for (auto &m : M) {
-            while (!m.empty() && m.begin()->time < ticker - NORMAL_DELAY * 2) {
+            while (!m.empty() && m.begin()->time < ticker - normal_delay * 2) {
                 m.erase(m.begin());
             }
-            if (!m.empty() && m.begin()->time >= ticker - 100 &&
-                m.begin()->time < ticker - 50) {
+            if (!m.empty() && m.begin()->time >= ticker - normal_delay * 2 &&
+                m.begin()->time < ticker - normal_delay) {
                 input.push_back(*m.begin());
             }
         }
