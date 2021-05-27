@@ -12,6 +12,8 @@ int set_connection(zmq::socket_t &socket) {
     return 0;
 }
 
+const int TIME_SLEEP = 50;
+
 }  // namespace
 
 Client::Client(Model *m)
@@ -34,13 +36,15 @@ Client::Client(Model *m)
         local_socket.connect(server_name);
 
         // Could be done with condition variable
-        while (model->get_id() == -1) {
+        while (model->get_id() == 0) {
         }
 
-        assert(model->get_id() != -1);
+        int my_id = model->get_id();
+        assert(my_id != 0);
         while (true) {
+//            std::this_thread::sleep_for(std::chrono::milliseconds(TIME_SLEEP));
             Message pullRequest = Message::create<Message::MessageType::Check>(
-                model->get_id(), 2, 2);
+                my_id, 2, 2);
             send(local_socket, std::move(pullRequest));
             auto result = receive(local_socket);
             if (result.type() != Message::MessageType::Empty) {
@@ -102,6 +106,9 @@ folly::NotificationQueue<Message> *Client::get_queue() {
 
 bool Client::is_ok_connection() {
     std::unique_lock l(m);
+    if (model->get_id() == 0) {
+        return true;
+    }
     Message request =
         Message::create<Message::MessageType::Check>(model->get_id(), 0, 0);
     Message response = send_and_receive(socket, std::move(request));
