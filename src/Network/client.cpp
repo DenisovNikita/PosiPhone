@@ -1,33 +1,22 @@
 #include "client.h"
+#include <glog/logging.h>
 #include <unordered_map>
 #include "model.h"
 #include "network_utils.h"
-#include "server.h"
 
 namespace {
-auto server_name = "tcp://188.119.67.234:" + std::to_string(port);
+const auto server_name = "tcp://188.119.67.234:" + std::to_string(port);
 
 int set_connection(zmq::socket_t &socket) {
     socket.connect(server_name);
     return 0;
 }
 
-std::unordered_map<int, std::string> to_string = {
-    {Message::MessageType::Empty, "Empty"},
-    {Message::MessageType::Connect, "Connect"},
-    {Message::MessageType::Create, "Create"},
-    {Message::MessageType::Move, "Move"},
-    {Message::MessageType::AudioSource, "AudioSource"},
-    {Message::MessageType::AudioResult, "AudioResult"},
-    {Message::MessageType::Destroy, "Destroy"},
-    {Message::MessageType::Check, "Check"},
-};
-
 }  // namespace
 
 Client::Client(Model *m)
     : model(m),
-      context(1),
+      context(IO_THREADS_),
       socket(context, ZMQ_REQ),
       th("client"),
       queue(max_size) {
@@ -40,23 +29,29 @@ Client::Client(Model *m)
     assert(set_connection(socket) == 0);
 
     network_thread = std::thread([&]() {
-        zmq::context_t local_context(1);
-        zmq::socket_t local_socket(local_context, ZMQ_REQ);
+        //        zmq::context_t local_context(IO_THREADS_);
+        zmq::socket_t local_socket(context, ZMQ_REQ);
         local_socket.connect(server_name);
+
+        // Could be done with condition variable
         while (model->get_id() == -1) {
         }
+
         assert(model->get_id() != -1);
         while (true) {
             Message pullRequest = Message::create<Message::MessageType::Check>(
                 model->get_id(), 2, 2);
             send(local_socket, std::move(pullRequest));
             auto result = receive(local_socket);
-            if (result.type() == Message::MessageType::Create ||
-                result.type() == Message::MessageType::Move ||
-                result.type() == Message::MessageType::AudioResult ||
-                result.type() == Message::MessageType::Destroy) {
+            if (result.type() != Message::MessageType::Empty) {
                 LOG(INFO) << "client received from another_client: "
                           << to_string[result.type()] << std::endl;
+            }
+            if (result.type() == Message::MessageType::AudioResult) {
+                // TODO: put in model audio queue
+            } else if (result.type() == Message::MessageType::Create ||
+                       result.type() == Message::MessageType::Move ||
+                       result.type() == Message::MessageType::Destroy) {
                 model->get_queue()->putMessage(std::move(result));
             } else if (result.type() == Message::MessageType::Empty) {
                 continue;
@@ -65,13 +60,13 @@ Client::Client(Model *m)
             }
         }
     });
-    std::cerr << "client created" << std::endl;
+    LOG(INFO) << "client created" << std::endl;
 }
 
 Message Client::send_to_server(Message &&msg) {
     auto res = send_and_receive(socket, std::move(msg));
     if (res.type() != Message::MessageType::Empty) {
-        std::cerr << "client received reply for server request: "
+        LOG(INFO) << "client received reply for server request: "
                   << to_string[res.type()] << std::endl;
     }
     return res;
@@ -89,11 +84,11 @@ void Client::messageAvailable(Message &&msg) noexcept {
         msg.type() == Message::MessageType::Destroy) {
         auto res = send_to_server(std::move(msg));
         if (res.type() != Message::MessageType::Empty) {
-            std::cerr << "client received from model: " << to_string[res.type()]
+            LOG(INFO) << "client received from model: " << to_string[res.type()]
                       << std::endl;
         }
         if (res.type() == Message::MessageType::Connect) {
-            std::cerr << "new_id = " << res.id() << std::endl;
+            LOG(INFO) << "new_id = " << res.id() << std::endl;
             model->get_queue()->putMessage(std::move(res));
         }
     } else {

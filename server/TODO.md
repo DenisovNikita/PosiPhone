@@ -1,6 +1,4 @@
-* Make RAII
-* Merge with Alexey
-* Long polling requests for detecting connection
-* Fill field pointer to server in client method set_connection(socket)
-* Send client his new id
+* Detecting client connection by requests 1 sec per
+* Send requests smth new per 50 milliseconds and response last change from server
+* Make review improvings
 * Complete TODO's

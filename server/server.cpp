@@ -3,7 +3,7 @@
 #include "network_utils.h"
 
 Server::Server()
-    : context(1), socket(context, ZMQ_REP), th("server"), queue(max_size) {
+    : context(IO_THREADS_), socket(context, ZMQ_REP), th("server"), queue(max_size) {
     auto *eventBase = th.getEventBase();
     eventBase->runInEventBaseThread(
         [eventBase, this]() { startConsuming(eventBase, &queue); });
@@ -21,14 +21,14 @@ void Server::messageAvailable(Message &&msg) noexcept {
     } else {
         // Other MessageType's are not suitable situation for message from
         // mixer to server
-        LOG(INFO) << "Received bad message type (to server from mixer) = |"
-                  << msg.type() << "|\n";
+        LOG(INFO) << "Received bad message type (to server from mixer) = "
+                  << to_string[msg.type()] << "\n";
         assert(false);
     }
 }
 
 void Server::send_to_all_clients_except_one(Message &&msg) {
-    LOG(INFO) << "send_to_all: from_id = " << msg.id() << "\n";
+    LOG(INFO) << "send_to_all: " << to_string[msg.type()] << ", from_id = " << msg.id() << "\n";
     for (auto &[id, v] : messages) {
         if (msg.id() != id) {
             v.push_back(msg);
