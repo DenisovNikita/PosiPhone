@@ -94,6 +94,7 @@ public:
         (ar) & (name_);
         (ar) & (x_);
         (ar) & (y_);
+        (ar) & (data_);
     }
 };
 
