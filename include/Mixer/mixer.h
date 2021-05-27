@@ -1,7 +1,10 @@
 #ifndef MIXER_MIXER_H
 #define MIXER_MIXER_H
 
+#define _GLIBCXX_DEBUG
+
 #include <folly/io/async/NotificationQueue.h>
+#include <folly/io/async/ScopedEventBaseThread.h>
 #include <cassert>
 #include <chrono>
 #include <cmath>
@@ -56,33 +59,17 @@ struct Message {
 
 std::vector<Message> try_to_mix(std::vector<Message> &vec);
 
-class QueueConsumer : public folly::NotificationQueue<Message>::Consumer {
-public:
-    QueueConsumer() = default;
-
-    void messageAvailable(Message &&value) noexcept override {
-        messages.push_back(value);
-        if (fn) {
-            fn(value);
-        }
-    }
-
-    std::function<void(Message)> fn;
-    std::deque<Message> messages;
-};
-
 struct time_compare {
     bool operator()(const Message &a, const Message &b) const {
         return (a.time < b.time);
     };
 };
 
-class Mixer {
+class Mixer : public folly::NotificationQueue<Message>::Consumer {
 private:
+    folly::ScopedEventBaseThread th;
     std::vector<std::multiset<Message, time_compare>> M;
     AudioFile<float> sample;
-    folly::EventBase eventBase;
-    QueueConsumer consumer;
     folly::NotificationQueue<Message> queue;
     long long normal_delay = 0, number_id = 0;
 
@@ -90,30 +77,33 @@ public:
     Mixer() {
         std::ifstream config("config.txt");
         config >> normal_delay >> number_id;
-        consumer.fn = [&](const Message &msg) {
-            if (msg.id == -1) {
-                consumer.stopConsuming();
-            }
-        };
+
+        auto *eventBase = th.getEventBase();
+        eventBase->runInEventBaseThread(
+            [eventBase, this]() { startConsuming(eventBase, &queue); });
+
         M.resize(number_id);
         sample.samples.resize(1);
         sample.samples[0].resize(2, 0);
+    }
+
+    void messageAvailable(Message &&msg) noexcept override {
+        M[msg.id].insert(msg);
     }
 
     void putMessage(Message msg) {
         queue.putMessage(msg);
     }
 
-    std::vector<Message> mix() {
-        queue.putMessage(Message{-1, -1, -1, -1, 0, sample});
-        consumer.startConsuming(&eventBase, &queue);
-        eventBase.loop();
-        while (!consumer.messages.empty()) {
-            if (consumer.messages.back().id != -1) {
-                M[consumer.messages.back().id].insert(consumer.messages.back());
-            }
-            consumer.messages.pop_back();
+    void add_id(int new_ids) {
+        if (new_ids <= number_id) {
+            return;
         }
+        M.resize(new_ids);
+        number_id = new_ids;
+    }
+
+    std::vector<Message> mix() {
         long long ticker = cur_time();
         std::vector<Message> input;
         for (auto &m : M) {
