@@ -1,7 +1,7 @@
 #ifndef MIXER_MIXER_H
 #define MIXER_MIXER_H
 
-#define _GLIBCXX_DEBUG
+//#define _GLIBCXX_DEBUG
 
 #include <folly/io/async/NotificationQueue.h>
 #include <folly/io/async/ScopedEventBaseThread.h>
@@ -74,50 +74,11 @@ private:
     long long normal_delay = 0, number_id = 0;
 
 public:
-    Mixer() {
-        std::ifstream config("config.txt");
-        config >> normal_delay >> number_id;
-
-        auto *eventBase = th.getEventBase();
-        eventBase->runInEventBaseThread(
-            [eventBase, this]() { startConsuming(eventBase, &queue); });
-
-        M.resize(number_id);
-        sample.samples.resize(1);
-        sample.samples[0].resize(2, 0);
-    }
-
-    void messageAvailable(Message &&msg) noexcept override {
-        M[msg.id].insert(msg);
-    }
-
-    void putMessage(Message msg) {
-        queue.putMessage(msg);
-    }
-
-    void add_id(int new_ids) {
-        if (new_ids <= number_id) {
-            return;
-        }
-        M.resize(new_ids);
-        number_id = new_ids;
-    }
-
-    std::vector<Message> mix() {
-        long long ticker = cur_time();
-        std::vector<Message> input;
-        for (auto &m : M) {
-            while (!m.empty() && m.begin()->time < ticker - normal_delay * 2) {
-                m.erase(m.begin());
-            }
-            if (!m.empty() && m.begin()->time >= ticker - normal_delay * 2 &&
-                m.begin()->time < ticker - normal_delay) {
-                input.push_back(*m.begin());
-            }
-        }
-
-        return try_to_mix(input);
-    }
+    Mixer();
+    void messageAvailable(Message &&msg) noexcept override;
+    void putMessage(const Message &msg);
+    void add_id(int new_ids);
+    std::vector<Message> mix();
 };
 }  // namespace mixer
 

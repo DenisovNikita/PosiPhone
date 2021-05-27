@@ -55,3 +55,51 @@ std::vector<mixer::Message> mixer::try_to_mix(
     }
     return result;
 }
+
+mixer::Mixer::Mixer() {
+    std::ifstream config("config.txt");
+    config >> normal_delay >> number_id;
+
+    auto *eventBase = th.getEventBase();
+    eventBase->runInEventBaseThread(
+        [eventBase, this]() { startConsuming(eventBase, &queue); });
+
+    M.resize(number_id);
+    sample.samples.resize(1);
+    sample.samples[0].resize(2, 0);
+}
+
+void mixer::Mixer::messageAvailable(Message &&msg) noexcept {
+    M[msg.id].insert(msg);
+}
+
+void mixer::Mixer::putMessage(const Message &msg) {
+    queue.putMessage(msg);
+}
+
+void mixer::Mixer::add_id(int new_ids) {
+    if (new_ids <= number_id) {
+        return;
+    }
+    M.resize(new_ids);
+    number_id = new_ids;
+}
+
+std::vector<mixer::Message> mixer::Mixer::mix() {
+    long long ticker = cur_time();
+    std::vector<Message> input;
+    for (auto &m : M) {
+        while (!m.empty() && m.begin()->time < ticker - normal_delay * 2) {
+            m.erase(m.begin());
+        }
+        if (!m.empty() && m.begin()->time >= ticker - normal_delay * 2 &&
+            m.begin()->time < ticker - normal_delay) {
+            input.push_back(*m.begin());
+        }
+    }
+    return try_to_mix(input);
+}
+
+int main() {
+    return 0;
+}
