@@ -1,14 +1,14 @@
 #include "model.h"
-#include <glog/logging.h>
-#include <iostream>
+#include "network_utils.h"
 
 Model::Model()
     : ID(),
       client(this),
+      thread("model queue thread"),
+      queue(maxSize),
+      audio_queue(maxSize),
       login_widget(this),
-      view(this),
-      th("model"),
-      queue(maxSize) {
+      view(this) {
     qRegisterMetaType<std::int64_t>("std::int64_t");
     qRegisterMetaType<User>("User");
 
@@ -16,7 +16,7 @@ Model::Model()
     connect_to_login_widget(&login_widget);
     connect(this, &Model::open_view_signal, this, &Model::open_view);
     connect(this, &Model::close_view_signal, this, &Model::close_view);
-    auto *eventBase = th.getEventBase();
+    auto *eventBase = thread.getEventBase();
     eventBase->runInEventBaseThread(
         [eventBase, this]() { startConsuming(eventBase, &queue); });
     runner.add("Check connection", [this]() {
@@ -30,7 +30,7 @@ Model::Model()
 }
 
 void Model::messageAvailable(Message &&msg) noexcept {
-    LOG(INFO) << "got " << msg.type() << " message\n";
+    LOG(INFO) << "got " << to_string[msg.type()] << " message\n";
     if (msg.type() == Message::Connect) {
         if (!client.is_ok_connection()) {
             emit close_view_signal();
@@ -50,12 +50,22 @@ void Model::messageAvailable(Message &&msg) noexcept {
     }
 }
 
+std::int64_t Model::get_id() const {
+    return ID;
+}
+
 folly::NotificationQueue<Message> *Model::get_queue() {
     return &queue;
 }
 
-std::int64_t Model::get_id() const {
-    return ID;
+bool Model::read_audio_message(Message &msg) {
+    return audio_queue.read(msg);
+}
+
+void Model::write_audio_message(Message &&msg) {
+    if (!audio_queue.write(std::move(msg))) {
+        LOG(WARNING) << "audio queue is full";
+    }
 }
 
 void Model::connect_to_view(View *v) const {
@@ -79,8 +89,8 @@ void Model::login_checked(Message &&msg) {
         emit login_found_signal();
     } else {
         ID = msg.id();
-        queue.putMessage(
-            Message::create<Message::Create>(msg.id(), msg.name(), msg.x(), msg.y()));
+        queue.putMessage(Message::create<Message::Create>(msg.id(), msg.name(),
+                                                          msg.x(), msg.y()));
         emit open_view_signal();
     }
 }
@@ -98,26 +108,26 @@ void Model::add_item(Message &&msg) {
 void Model::set_pos(Message &&msg) {
     auto user = users.find(msg.id());
     if (user != users.end()) {
-        if (msg.id() == ID) {
-            client.get_queue()->putMessage(msg);
-        }
         user->second->set_pos(msg.x(), msg.y());
         emit set_pos_signal(msg.id(), msg.x(), msg.y());
+        if (msg.id() == ID) {
+            client.get_queue()->putMessage(std::move(msg));
+        }
     } else {
-        std::cerr << "Trying to move unknown circle" << std::endl;
+        LOG(WARNING) << "Trying to move unknown circle\n";
     }
 }
 
 void Model::remove_item(Message &&msg) {
     auto user = users.find(msg.id());
     if (user != users.end()) {
-        if (msg.id() == ID) {
-            client.get_queue()->putMessage(msg);
-        }
         users.erase(user);
         emit remove_item_signal(msg.id());
+        if (msg.id() == ID) {
+            client.get_queue()->putMessage(std::move(msg));
+        }
     } else {
-        std::cerr << "Trying to remove unknown circle" << std::endl;
+        LOG(WARNING) << "Trying to remove unknown circle\n";
     }
 }
 
@@ -137,7 +147,6 @@ void Model::close_view() {
 }
 
 Model::~Model() {
-    client.get_queue()->putMessage(Message::create<Message::Destroy>(ID));
     runner.stop();
-    th.getEventBase()->runInEventBaseThread([this]() { stopConsuming(); });
+    thread.getEventBase()->runInEventBaseThread([this]() { stopConsuming(); });
 }

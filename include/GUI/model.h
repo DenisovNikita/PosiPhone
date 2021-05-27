@@ -1,15 +1,16 @@
 #ifndef GUI_MODEL_H
 #define GUI_MODEL_H
 
+#include <folly/ProducerConsumerQueue.h>
 #include <folly/experimental/ThreadedRepeatingFunctionRunner.h>
 #include <folly/io/async/NotificationQueue.h>
 #include <folly/io/async/ScopedEventBaseThread.h>
+#include <glog/logging.h>
 #include <QMessageBox>
 #include <QString>
 #include <QWidget>
 #include <chrono>
 #include <cstdint>
-#include <iosfwd>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -26,19 +27,22 @@ class Model final : public QWidget,
     Q_OBJECT
     std::int64_t ID;
     Client client;
-    LoginWidget login_widget;
-    View view;
-    folly::ScopedEventBaseThread th;
+    folly::ScopedEventBaseThread thread;
     const uint32_t maxSize = 10'000;
     folly::NotificationQueue<Message> queue;
+    folly::ProducerConsumerQueue<Message> audio_queue;
+    LoginWidget login_widget;
+    View view;
     std::unordered_map<std::int64_t, std::unique_ptr<User>> users;
     folly::ThreadedRepeatingFunctionRunner runner;
 
 public:
     Model();
     void messageAvailable(Message &&msg) noexcept override;
-    folly::NotificationQueue<Message> *get_queue();
     std::int64_t get_id() const;
+    folly::NotificationQueue<Message> *get_queue();
+    bool read_audio_message(Message &msg);
+    void write_audio_message(Message &&msg);
     ~Model() override;
 
 private:

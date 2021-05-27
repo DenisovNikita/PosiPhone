@@ -4,7 +4,7 @@
 Producer::Producer(Model *model) : queue(model->get_queue()) {
 }
 
-void Producer::send_message(const Message &msg) {
+void Producer::send_message(Message &&msg) {
     th.getEventBase()->runInEventBaseThread(
-        [msg, this]() { queue->putMessage(msg); });
+        [&msg, this]() { queue->putMessage(std::move(msg)); });
 }

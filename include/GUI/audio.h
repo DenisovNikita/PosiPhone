@@ -11,6 +11,8 @@
 #include <QPushButton>
 #include <stdexcept>
 #include <string>
+#include "message.h"
+#include "model_fwd.h"
 
 class Audio : public QPushButton {
     Q_OBJECT
@@ -21,31 +23,32 @@ private slots:
     void switch_button();
 
 protected:
-    explicit Audio(const std::string &name, QWidget *parent = nullptr);
+    Model *model;
+    Audio(const std::string &name, Model *model, QWidget *parent = nullptr);
 };
 
 class Recorder final : public Audio {
     Q_OBJECT
     QAudioInput recorder;
     QBuffer buffer;
+    QByteArray &array;
     folly::ThreadedRepeatingFunctionRunner runner;
 
 public:
-    explicit Recorder(QWidget *parent = nullptr);
+    explicit Recorder(Model *model, QWidget *parent = nullptr);
     ~Recorder() override;
-    QByteArray record();
 };
 
 class Player final : public Audio {
     Q_OBJECT
     QAudioOutput player;
     QBuffer buffer;
+    QByteArray &array;
     folly::ThreadedRepeatingFunctionRunner runner;
 
 public:
-    explicit Player(QWidget *parent = nullptr);
+    explicit Player(Model *model, QWidget *parent = nullptr);
     ~Player() override;
-    void play(const QByteArray &arr);
 };
 
 #endif  // GUI_BUTTON_H

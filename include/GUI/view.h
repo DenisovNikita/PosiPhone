@@ -1,10 +1,11 @@
 #ifndef GUI_VIEW_H
 #define GUI_VIEW_H
 
+#include <glog/logging.h>
 #include <QGraphicsScene>
 #include <QMainWindow>
+#include <QSpacerItem>
 #include <cstdint>
-#include <iosfwd>
 #include <memory>
 #include <unordered_map>
 #include "audio.h"
@@ -18,6 +19,9 @@ class View : public QMainWindow {
     Model *model;
     bool is_shown_;
     Ui::View ui;
+    Recorder *recorder;
+    Player *player;
+    QSpacerItem *horizontalSpacer;
     QGraphicsScene scene;
     std::unordered_map<std::int64_t, std::unique_ptr<MoveItem>> items;
     void closeEvent(QCloseEvent *event) override;

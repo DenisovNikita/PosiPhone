@@ -18,7 +18,7 @@ find_package(folly REQUIRED)
 find_package(gflags REQUIRED)
 find_package(Threads REQUIRED)
 find_package(Qt5 COMPONENTS Widgets Multimedia REQUIRED)
-find_package(Boost 1.51.0 COMPONENTS system serialization REQUIRED)
+find_package(Boost 1.51.0 REQUIRED COMPONENTS system serialization)
 
 find_path(ZMQ_INCLUDE_DIR zmq.h)
 find_library(ZMQ_LIBRARY NAMES zmq)

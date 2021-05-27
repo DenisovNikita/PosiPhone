@@ -14,7 +14,7 @@ class Mock {
     const int TIME = 10;
     const int D = 25;
 
-    void send_message(const Message &msg);
+    void send_message(Message &&msg);
 
 public:
     explicit Mock(Model *model);
