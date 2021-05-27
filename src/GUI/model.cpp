@@ -71,7 +71,7 @@ void Model::connect_to_login_widget(LoginWidget *l) const {
 
 void Model::check_login(const QString &login) {
     client.get_queue()->putMessage(
-        Message::create<Message::Connect>(0, login.toStdString(), 0, 0));
+        Message::create<Message::Connect>(ID, login.toStdString(), 0, 0));
 }
 
 void Model::login_checked(Message &&msg) {
@@ -80,7 +80,7 @@ void Model::login_checked(Message &&msg) {
     } else {
         ID = msg.id();
         queue.putMessage(
-            Message::create<Message::Create>(ID, msg.name(), 0, 0));
+            Message::create<Message::Create>(msg.id(), msg.name(), msg.x(), msg.y()));
         emit open_view_signal();
     }
 }
@@ -130,13 +130,14 @@ void Model::close_view() {
     view.close();
     login_widget.show();
     QMessageBox::warning(this, "Warning",
-                         "No internet connection"
-                         "\nYou have to re-login");
+                         "No internet connection\n"
+                         "You have to re-login");
     queue.putMessage(Message::create<Message::Destroy>(ID));
     ID = 0;
 }
 
 Model::~Model() {
+    client.get_queue()->putMessage(Message::create<Message::Destroy>(ID));
     runner.stop();
     th.getEventBase()->runInEventBaseThread([this]() { stopConsuming(); });
 }

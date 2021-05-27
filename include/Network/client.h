@@ -2,21 +2,9 @@
 
 #include <folly/io/async/NotificationQueue.h>
 #include <folly/io/async/ScopedEventBaseThread.h>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/serialization/map.hpp>
-#include <boost/serialization/serialization.hpp>
-#include <iostream>
-#include <sstream>
-#include <thread>
 #include <zmq.hpp>
 #include "message.h"
 #include "model_fwd.h"
-#include "server_fwd.h"
-
-using std::cout, std::cin;
-using std::string;
-using std::stringstream;
 
 class Client : public folly::NotificationQueue<Message>::Consumer {
 private:

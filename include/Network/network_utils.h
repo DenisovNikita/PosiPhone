@@ -5,7 +5,6 @@
 #include <boost/serialization/serialization.hpp>
 #include <zmq.hpp>
 #include "message.h"
-#include "server.h"
 
 static const int port = 1234;
 

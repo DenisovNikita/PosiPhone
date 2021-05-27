@@ -1,4 +1,3 @@
-#include <glog/logging.h>
 #include "message.h"
 #include "network_utils.h"
 #include "server.h"

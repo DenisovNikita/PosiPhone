@@ -1,7 +1,6 @@
 #include "server.h"
 #include "client.h"
 #include "network_utils.h"
-#include <glog/logging.h>
 
 Server::Server()
     : context(1), socket(context, ZMQ_REP), th("server"), queue(max_size) {
@@ -22,14 +21,13 @@ void Server::messageAvailable(Message &&msg) noexcept {
     } else {
         // Other MessageType's are not suitable situation for message from
         // mixer to server
-        std::cerr << "Received bad message type (to server from mixer) = |"
+        LOG(INFO) << "Received bad message type (to server from mixer) = |"
                   << msg.type() << "|\n";
         assert(false);
     }
 }
 
 void Server::send_to_all_clients_except_one(Message &&msg) {
-    //    TODO: zmq_router or something else
     LOG(INFO) << "send_to_all: from_id = " << msg.id() << "\n";
     for (auto &[id, v] : messages) {
         if (msg.id() != id) {

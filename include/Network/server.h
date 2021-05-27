@@ -2,7 +2,7 @@
 
 #include <folly/io/async/NotificationQueue.h>
 #include <folly/io/async/ScopedEventBaseThread.h>
-#include <algorithm>
+#include <glog/logging.h>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/serialization/map.hpp>
@@ -10,18 +10,10 @@
 #include <boost/serialization/string.hpp>
 #include <cstdint>
 #include <iostream>
-#include <sstream>
-#include <unordered_set>
-#include <vector>
-#include <zmq.hpp>
 #include <set>
+#include <zmq.hpp>
 #include "client_fwd.h"
 #include "message.h"
-
-using std::cout, std::cin;
-using std::string;
-using std::stringstream;
-using std::vector;
 
 class Server : public folly::NotificationQueue<Message>::Consumer {
 public:
