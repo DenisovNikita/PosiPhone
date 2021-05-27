@@ -14,12 +14,16 @@
 #include <string>
 #include <utility>
 #include <vector>
-#include "AudioFile/AudioFile.h"
+#include "mixer/AudioFile/AudioFile.h"
 
 #define NORMAL_DELAY 50
 #define NUMBER_OF_ID 5
 
 namespace mixer {
+
+std::vector<AudioFile<float>> split(AudioFile<float> file, double dur);
+
+AudioFile<float> join(const std::vector<AudioFile<float>> &v);
 
 long long cur_time() {
     return std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -53,20 +57,7 @@ struct Message {
           data(std::move(data_)){};
 };
 
-std::vector<Message> try_to_mix(std::vector<Message> &vec) {
-    std::vector<Message> result = vec;
-    for (auto &r : result) {
-        for (auto v : vec) {
-            if (v.id == r.id) {
-                r.data.addAudioBuffer(v.data.samples, -1);
-            } else {
-                r.data.addAudioBuffer(v.data.samples,
-                                      count_coef(r.x, r.y, v.x, v.y));
-            }
-        }
-    }
-    return result;
-}
+std::vector<Message> try_to_mix(std::vector<Message> &vec);
 
 class QueueConsumer : public folly::NotificationQueue<Message>::Consumer {
 public:
@@ -83,23 +74,30 @@ public:
     std::deque<Message> messages;
 };
 
-struct Mixer {
-    std::function<bool(const Message &, const Message &)> time_compare =
-        [](const auto &a, const auto &b) { return a.time < b.time; };
-    std::multiset<Message, decltype(time_compare)> M[NUMBER_OF_ID];
+struct time_compare {
+    bool operator()(const Message &a, const Message &b) const {
+        return (a.time < b.time);
+    };
+};
+
+class Mixer {
+private:
+    std::vector<std::multiset<Message, time_compare>> M;
     AudioFile<float> sample;
     folly::EventBase eventBase;
     QueueConsumer consumer;
     folly::NotificationQueue<Message> queue;
 
+public:
     Mixer() {
         consumer.fn = [&](const Message &msg) {
             if (msg.id == -1) {
                 consumer.stopConsuming();
             }
         };
-
-        sample.setAudioBufferSize(1, 0);
+        M.resize(NUMBER_OF_ID);
+        sample.samples.resize(1);
+        sample.samples[0].resize(2, 0);
     }
 
     void putMessage(Message msg) {
@@ -119,7 +117,7 @@ struct Mixer {
         long long ticker = cur_time();
         std::vector<Message> input;
         for (auto &m : M) {
-            while (!m.empty() && m.begin()->time < ticker - 100) {
+            while (!m.empty() && m.begin()->time < ticker - NORMAL_DELAY * 2) {
                 m.erase(m.begin());
             }
             if (!m.empty() && m.begin()->time >= ticker - 100 &&
@@ -127,11 +125,8 @@ struct Mixer {
                 input.push_back(*m.begin());
             }
         }
-        if (!input.empty()) {
-            return try_to_mix(input);
-        } else {
-            return std::vector<Message>();
-        }
+
+        return try_to_mix(input);
     }
 };
 }  // namespace mixer
