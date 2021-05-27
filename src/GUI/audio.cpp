@@ -1,14 +1,29 @@
 #include "audio.h"
 
 namespace {
+[[maybe_unused]] QByteArray ARR;
 QIcon init_icon(const std::string &name, bool b) {
     std::string path = ":/" + name + (b ? "_on.png" : "_off.png");
     return QIcon(path.c_str());
 }
+QAudioFormat setWavFormat(const QAudioDeviceInfo &dev_info) {
+    static QAudioFormat format;
+    format.setSampleRate(8000);
+    format.setChannelCount(1);
+    format.setSampleSize(8);
+    format.setCodec("audio/pcm");
+    format.setByteOrder(QAudioFormat::LittleEndian);
+    format.setSampleType(QAudioFormat::UnSignedInt);
+
+    if (dev_info.isFormatSupported(format)) {
+        return format;
+    } else {
+        throw std::runtime_error("WAV format not supported, cannot play audio");
+    }
+}
 }  // namespace
 
-Audio::Audio(const std::string &name, QWidget *parent)
-    : QPushButton(parent), name(name) {
+Audio::Audio(const std::string &name, QWidget *parent) : QPushButton(parent) {
     setCheckable(true);
     setChecked(true);
     for (int i = 0; i < 2; ++i) {
@@ -17,7 +32,6 @@ Audio::Audio(const std::string &name, QWidget *parent)
     setFixedSize(56, 48);
     setIcon();
     connect(this, &QPushButton::clicked, this, &Audio::switch_button);
-    qDebug() << std::string("button \"" + name + "\" was created").c_str();
 }
 
 void Audio::setIcon() {
@@ -27,37 +41,47 @@ void Audio::setIcon() {
 
 void Audio::switch_button() {
     setIcon();
-    qDebug() << std::string("button \"" + name + "\" was turned " +
-                            (isChecked() ? "on" : "off"))
-                    .c_str();
 }
 
-Player::Player(QWidget *parent) : Audio("sound", parent), player() {
+Recorder::Recorder(QWidget *parent)
+    : Audio("micro", parent),
+      recorder(setWavFormat(QAudioDeviceInfo::defaultInputDevice())) {
+    buffer.open(QBuffer::WriteOnly);
+    recorder.start(&buffer);
+//    runner.add("Recorder", [this]() {
+//        if (isChecked()) {
+//            ARR = buffer.buffer(); // TODO
+//            buffer.buffer().clear();
+//        }
+//        return std::chrono::milliseconds(5000);
+//    });
 }
 
-void Player::play(const std::string &filename) {
-    qDebug() << "playing file";
-    std::string file = "/../" + filename;
-    player.setMedia(QUrl::fromLocalFile(file.c_str()));
-    player.play();
+Recorder::~Recorder() {
+    runner.stop();
 }
 
-Recorder::Recorder(QWidget *parent) : Audio("micro", parent), recorder() {
+QByteArray Recorder::record() {
+    auto res = buffer.buffer();
+    buffer.buffer().clear();
+    return res;
 }
 
-void Recorder::record() {
-    qDebug() << "recording started";
-    std::string file = "/sample.wav";
-    recorder.setOutputLocation(QUrl::fromLocalFile(file.c_str()));
-    recorder.record();
+Player::Player(QWidget *parent)
+    : Audio("sound", parent),
+      player(setWavFormat(QAudioDeviceInfo::defaultOutputDevice())) {
+    buffer.open(QBuffer::ReadOnly);
+    player.start(&buffer);
+//    runner.add("Player", [this]() {
+//        buffer.buffer() = ARR; // TODO
+//        return std::chrono::milliseconds(5000);
+//    });
 }
 
-void Recorder::stop() {
-    recorder.stop();
-    qDebug() << "recording stopped";
+Player::~Player() {
+    runner.stop();
 }
 
-//    Player test;
-//    test.play("sample.wav");
-//    test.record();
-//    QTimer::singleShot(5000, &test, &Recorder::stop);
+void Player::play(const QByteArray &array) {
+    buffer.buffer() = array;
+}

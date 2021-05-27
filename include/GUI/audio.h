@@ -1,20 +1,19 @@
 #ifndef GUI_BUTTON_H
 #define GUI_BUTTON_H
 
-#include <QAudioRecorder>
-#include <QDebug>
-#include <QFile>
+#include <folly/experimental/ThreadedRepeatingFunctionRunner.h>
+#include <QAudioDeviceInfo>
+#include <QAudioFormat>
+#include <QAudioInput>
+#include <QAudioOutput>
+#include <QBuffer>
 #include <QIcon>
-#include <QMediaPlayer>
-#include <QPixmap>
 #include <QPushButton>
-#include <QTimer>
-#include <QUrl>
+#include <stdexcept>
 #include <string>
 
 class Audio : public QPushButton {
     Q_OBJECT
-    std::string name;
     QIcon icons[2];
     void setIcon();
 
@@ -25,23 +24,28 @@ protected:
     explicit Audio(const std::string &name, QWidget *parent = nullptr);
 };
 
-class Player : public Audio {
+class Recorder final : public Audio {
     Q_OBJECT
-    QMediaPlayer player;
-    void play(const std::string &filename);
-
-public:
-    explicit Player(QWidget *parent = nullptr);
-};
-
-class Recorder : public Audio {
-    Q_OBJECT
-    QAudioRecorder recorder;
-    void record();
-    void stop();
+    QAudioInput recorder;
+    QBuffer buffer;
+    folly::ThreadedRepeatingFunctionRunner runner;
 
 public:
     explicit Recorder(QWidget *parent = nullptr);
+    ~Recorder() override;
+    QByteArray record();
+};
+
+class Player final : public Audio {
+    Q_OBJECT
+    QAudioOutput player;
+    QBuffer buffer;
+    folly::ThreadedRepeatingFunctionRunner runner;
+
+public:
+    explicit Player(QWidget *parent = nullptr);
+    ~Player() override;
+    void play(const QByteArray &arr);
 };
 
 #endif  // GUI_BUTTON_H
