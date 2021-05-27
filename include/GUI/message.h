@@ -57,9 +57,9 @@ private:
 
 public:
     Message();
-    Message(Message &) = delete;
+    Message(const Message &) = default;
     Message(Message &&) = default;
-    Message &operator=(const Message &) = delete;
+    Message &operator=(const Message &) = default;
     Message &operator=(Message &&) = default;
     [[nodiscard]] MessageType type() const;
     [[nodiscard]] std::int64_t id() const;

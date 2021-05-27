@@ -12,7 +12,7 @@ private:
     zmq::context_t context;
     zmq::socket_t socket;
     folly::ScopedEventBaseThread th;
-    const uint32_t max_size = 10'000;
+    static const uint32_t max_size = 10'000;
     folly::NotificationQueue<Message> queue;
     std::thread network_thread;
     std::mutex m;

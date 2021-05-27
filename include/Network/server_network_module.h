@@ -15,7 +15,7 @@
 #include "client_fwd.h"
 #include "message.h"
 
-class Server : public folly::NotificationQueue<Message>::Consumer {
+class Server_network_module : public folly::NotificationQueue<Message>::Consumer {
 public:
     std::unordered_set<std::string> usernames;
     std::unordered_map<std::int64_t, std::pair<double, double>> crds;
@@ -26,11 +26,11 @@ public:
     zmq::context_t context;
     zmq::socket_t socket;
     folly::ScopedEventBaseThread th;
-    const uint32_t max_size = 10'000;
+    static const uint32_t max_size = 10'000;
     folly::NotificationQueue<Message> queue;
     //    Mixer *mixer;  // TODO: support mixer integrate
 
-    Server();
+    Server_network_module();
 
     folly::NotificationQueue<Message> *get_queue();
 
@@ -40,5 +40,5 @@ public:
 
     void send_to_one_client(Message &&msg);
 
-    ~Server() override;
+    ~Server_network_module() override;
 };

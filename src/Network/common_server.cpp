@@ -1,5 +1,5 @@
-#include "server.h"
+#include "server_network_module.h"
 
-folly::NotificationQueue<Message> *Server::get_queue() {
+folly::NotificationQueue<Message> *Server_network_module::get_queue() {
     return &queue;
 }

@@ -31,7 +31,6 @@ Client::Client(Model *m)
     assert(set_connection(socket) == 0);
 
     network_thread = std::thread([&]() {
-        //        zmq::context_t local_context(IO_THREADS_);
         zmq::socket_t local_socket(context, ZMQ_REQ);
         local_socket.connect(server_name);
 

@@ -36,7 +36,7 @@ add_executable(${PROJECT_NAME}
     include/GUI/view.h
     include/Network/client.h
     include/Network/client_fwd.h
-    include/Network/server.h
+    include/Network/server_network_module.h
     include/Network/server_fwd.h
     include/GUI/view.ui
     resources/resources.qrc

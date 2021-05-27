@@ -1,3 +1,3 @@
 #pragma once
 
-class Server;
+class Server_network_module;

@@ -16,8 +16,8 @@ find_library(ZMQ_LIBRARY NAMES zmq)
 
 add_executable(server
         common_client.cpp
+        server_network_module.cpp
         server.cpp
-        server_main.cpp
         network_utils.cpp
     ../src/GUI/message.cpp
 )
