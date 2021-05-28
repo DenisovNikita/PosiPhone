@@ -34,7 +34,7 @@ public:
 
 }  // namespace utils
 
-namespace mixer {
+namespace PosiPhone {
 
 std::vector<AudioFile<float>> split(AudioFile<float> file, double dur);
 
@@ -69,11 +69,12 @@ class Mixer final : public folly::NotificationQueue<AudioMessage>::Consumer {
     AudioFile<float> sample;
     folly::NotificationQueue<AudioMessage> queue;
     long long normal_delay = 50, number_id = 10;
-    std::vector<PosiPhone::Message> request_answer = {};
+    std::vector<Message> request_answer = {};
     folly::ThreadedRepeatingFunctionRunner runner;
+    folly::NotificationQueue<Message> *result;
 
 public:
-    Mixer() {
+    Mixer(folly::NotificationQueue<Message> *result_) : result(result_) {
         std::ifstream config("include/Mixer/config.txt");
         config >> normal_delay >> number_id;
         messages_sorted.resize(10);
@@ -90,15 +91,15 @@ public:
             [eventBase, this]() { startConsuming(eventBase, &queue); });
     }
     void messageAvailable(AudioMessage &&msg) noexcept override;
-    void putMessage(const PosiPhone::Message &msg);
+    void putMessage(Message &&msg);
     void add_id(int new_ids);
-    std::vector<PosiPhone::Message> get_messages();
-    std::vector<PosiPhone::Message> mix();
+    void send_messages();
+    std::vector<Message> mix();
     ~Mixer() override {
         runner.stop();
         th.getEventBase()->runInEventBaseThread([this]() { stopConsuming(); });
     }
 };
-}  // namespace mixer
+}  // namespace PosiPhone
 
 #endif  // MIXER_MIXER_H

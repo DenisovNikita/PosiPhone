@@ -10,7 +10,8 @@ double utils::utils::count_coef(double x1, double y1, double x2, double y2) {
     return 1.0 / fmax(1.0, sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2)));
 }
 
-std::vector<AudioFile<float>> mixer::split(AudioFile<float> file, double dur) {
+namespace PosiPhone {
+std::vector<AudioFile<float>> split(AudioFile<float> file, double dur) {
     std::vector<AudioFile<float>> splitted;
     splitted.resize(floor(file.getLengthInSeconds() / dur));
     for (int i = 0; i < splitted.size(); i++) {
@@ -26,7 +27,7 @@ std::vector<AudioFile<float>> mixer::split(AudioFile<float> file, double dur) {
     return splitted;
 }
 
-AudioFile<float> mixer::join(const std::vector<AudioFile<float>> &separate) {
+AudioFile<float> join(const std::vector<AudioFile<float>> &separate) {
     AudioFile<float> joint;
     int channels = 0, len = 0, numSamples = 0;
     for (const auto &c : separate) {
@@ -50,9 +51,8 @@ AudioFile<float> mixer::join(const std::vector<AudioFile<float>> &separate) {
     return joint;
 }
 
-std::vector<mixer::AudioMessage> mixer::try_to_mix(
-    std::vector<mixer::AudioMessage> &vec) {
-    std::vector<mixer::AudioMessage> result = vec;
+std::vector<AudioMessage> try_to_mix(std::vector<AudioMessage> &vec) {
+    std::vector<AudioMessage> result = vec;
     for (auto &r : result) {
         for (auto v : vec) {
             if (v.id == r.id) {
@@ -66,7 +66,7 @@ std::vector<mixer::AudioMessage> mixer::try_to_mix(
     return result;
 }
 
-void mixer::Mixer::messageAvailable(AudioMessage &&msg) noexcept {
+void Mixer::messageAvailable(AudioMessage &&msg) noexcept {
     if (messages_sorted[msg.id].empty()) {
         messages_sorted[msg.id].emplace(msg);
     } else {
@@ -74,11 +74,21 @@ void mixer::Mixer::messageAvailable(AudioMessage &&msg) noexcept {
     }
 }
 
-void mixer::Mixer::putMessage(const PosiPhone::Message &msg) {
-    queue.putMessage(msg);
+void Mixer::putMessage(Message &&msg) {
+    std::vector<char> vec(msg.data(), msg.data() + msg.size());
+    float *ptr = reinterpret_cast<float *>(vec.data());
+    int size = vec.size() / sizeof(float);
+    std::vector<std::vector<float>> buf(1, std::vector<float>(size));
+    for (int i = 0; i < size; ++i) {
+        buf[0][i] = *ptr++;
+    }
+    AudioFile<float> af;
+    af.setAudioBuffer(buf);
+    queue.putMessage(
+        AudioMessage{msg.x(), msg.y(), msg.id(), msg.create_time(), af});
 }
 
-void mixer::Mixer::add_id(int new_ids) {
+void Mixer::add_id(int new_ids) {
     if (new_ids <= number_id) {
         return;
     }
@@ -86,11 +96,22 @@ void mixer::Mixer::add_id(int new_ids) {
     number_id = new_ids;
 }
 
-std::vector<mixer::AudioMessage> mixer::Mixer::get_messages() {
-    return request_answer;
+void Mixer::send_messages() {
+    for (const AudioMessage &af : request_answer) {
+        std::vector<char> vec;
+        for (int i = 0; i < af.data.getNumSamplesPerChannel(); ++i) {
+            for (int j = 0; j < af.data.getNumChannels(); ++j) {
+                char *ptr = reinterpret_cast<char *>(af.data.samples[j][i]);
+                int size = sizeof(float);
+                vec.insert(vec.end(), ptr, ptr + size);
+            }
+        }
+        *result->putMessage(Message::create<Message::AudioResult>(
+            af.id, vec.data(), vec.size()));
+    }
 }
 
-std::vector<PosiPhone::Message> mixer::Mixer::mix() {
+std::vector<Message> Mixer::mix() {
     long long ticker = utils::utils().cur_time();
     std::vector<AudioMessage> input;
     for (auto &m : messages_sorted) {
@@ -104,3 +125,5 @@ std::vector<PosiPhone::Message> mixer::Mixer::mix() {
     }
     return try_to_mix(input);
 }
+
+}  // namespace PosiPhone
