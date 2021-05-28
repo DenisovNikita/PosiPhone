@@ -1,4 +1,5 @@
 #include "mixer.h"
+#include "AudioFile.h"
 
 long long utils::utils::cur_time() {
     return std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -7,7 +8,7 @@ long long utils::utils::cur_time() {
 }
 
 double utils::utils::count_coef(double x1, double y1, double x2, double y2) {
-    return 1.0 / fmax(1.0, sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2)));
+    return 1.0 / fmax(1.0, sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2)) / 100.0);
 }
 
 namespace PosiPhone {
@@ -75,7 +76,8 @@ void Mixer::messageAvailable(AudioMessage &&msg) noexcept {
 }
 
 void Mixer::putMessage(Message &&msg) {
-    std::vector<char> vec(msg.data(), msg.data() + msg.size());
+    msg.print("server -> mixer");
+    std::vector<char> vec(*msg.data());
     auto *ptr = reinterpret_cast<float *>(vec.data());
     int size = vec.size() / sizeof(float);
     std::vector<std::vector<float>> buf(1, std::vector<float>(size));
@@ -106,8 +108,12 @@ void Mixer::send_messages() {
                 vec.insert(vec.end(), ptr, ptr + size);
             }
         }
-        result->putMessage(Message::create<Message::AudioResult>(
-            af.id, vec.data(), vec.size()));
+
+        Message msg = Message::create<Message::AudioResult>(
+            af.id, std::make_shared<std::vector<char>>(vec));
+        msg.print("mixer -> server (send)");
+
+        result->putMessage(std::move(msg));
     }
 }
 
@@ -134,7 +140,9 @@ Mixer::Mixer(folly::NotificationQueue<Message> *result_) : result(result_) {
     sample.samples[0].resize(2, 0);
 
     runner.add("Mixer", [this]() {
+        LOG(INFO) << "_______________________________________________\n";
         request_answer = mix();
+        send_messages();
         return std::chrono::milliseconds(50);
     });
 

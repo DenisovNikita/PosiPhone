@@ -1,6 +1,7 @@
 #include "message.h"
 #include "network_utils.h"
 #include "server_network_module.h"
+#include "mixer.h"
 
 namespace PosiPhone {
 namespace {
@@ -26,6 +27,7 @@ int main(int argc, char *argv[]) {
     google::InitGoogleLogging(argv[0]);
     FLAGS_logtostderr = 1;
     PosiPhone::Server_network_module server_module;
+    PosiPhone::Mixer mixer(server_module.get_queue());
     int start = PosiPhone::cur_time();
     std::thread thread_for_clients_messages([&]() {
         while (true) {
@@ -73,12 +75,13 @@ int main(int argc, char *argv[]) {
                 server_module.send_to_one_client(PosiPhone::Message());
                 server_module.send_to_all_clients_except_one(std::move(msg));
             } else if (msg.type() == PosiPhone::Message::AudioSource) {
-                // TODO: send msg to mixer
-                server_module.send_to_all_clients_except_one(
-                    PosiPhone::Message::create<PosiPhone::Message::AudioResult>(
-                        msg.id(), msg.data()));
                 server_module.send_to_one_client(
                     PosiPhone::Message::create<PosiPhone::Message::Empty>());
+                mixer.putMessage(std::move(msg));
+
+//                server_module.send_to_all_clients_except_one(
+//                    PosiPhone::Message::create<PosiPhone::Message::AudioResult>(
+//                        msg.id(), msg.data()));
             } else if (msg.type() == PosiPhone::Message::Check_connection) {
                 server_module.send_to_one_client(std::move(msg));
             } else if (msg.type() == PosiPhone::Message::Request_new_info) {

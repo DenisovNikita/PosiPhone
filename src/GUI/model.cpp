@@ -55,6 +55,14 @@ std::int64_t Model::get_id() const {
     return ID;
 }
 
+double Model::get_x() {
+    return users[ID]->x();
+}
+
+double Model::get_y() {
+    return users[ID]->y();
+}
+
 folly::NotificationQueue<Message> *Model::get_queue() {
     return &queue;
 }

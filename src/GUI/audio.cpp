@@ -56,7 +56,8 @@ Recorder::Recorder(Model *model, QWidget *parent)
             tmp.assign(buffer.buffer().data(),
                        buffer.buffer().data() + buffer.buffer().size());
             model->send_message(Message::create<Message::AudioSource>(
-                model->get_id(), std::make_shared<std::vector<char>>(tmp)));
+                model->get_id(), model->get_x(), model->get_y(),
+                std::make_shared<std::vector<char>>(tmp)));
         }
         buffer.buffer().clear();
         buffer.reset();

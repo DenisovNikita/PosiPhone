@@ -21,7 +21,7 @@ folly::NotificationQueue<Message> *Server_network_module::get_queue() {
 void Server_network_module::messageAvailable(Message &&msg) noexcept {
     if (msg.type() == Message::MessageType::AudioResult) {  // send to one
                                                             // client from mixer
-        send_to_one_client(std::move(msg));
+        clients_data.messages[msg.id()].push_back(std::move(msg));
     } else {
         // Other MessageType's are not suitable situation for message from
         // mixer to server

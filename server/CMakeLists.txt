@@ -19,12 +19,14 @@ add_executable(server
         server_network_module.cpp
         server.cpp
         network_utils.cpp
+        mixer.cpp
     ../src/GUI/message.cpp
 )
 
 target_include_directories(server PRIVATE
     ../include/GUI/
     ../include/Network/
+    ../include/Mixer
     ${Boost_INCLUDE_DIRS}
     ${FOLLY_INCLUDE_DIR}
     ${ZMQ_INCLUDE_DIR}
