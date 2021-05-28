@@ -1,5 +1,6 @@
 #include "network_utils.h"
 
+namespace PosiPhone {
 void send(zmq::socket_t &socket, Message &&msg) {
     std::stringstream stream;
     {
@@ -27,3 +28,5 @@ Message send_and_receive(zmq::socket_t &socket, Message &&msg) {
     send(socket, std::move(msg));
     return receive(socket);
 }
+
+}  // namespace PosiPhone

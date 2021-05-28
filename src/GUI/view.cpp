@@ -1,5 +1,6 @@
 #include "view.h"
 
+namespace PosiPhone {
 View::View(Model *model, QWidget *parent)
     : QMainWindow(parent),
       model(model),
@@ -67,3 +68,5 @@ void View::remove_item(std::int64_t id) {
 void View::set_pos(std::int64_t id, double x, double y) {
     items[id]->setPos(x, y);
 }
+
+}  // namespace PosiPhone

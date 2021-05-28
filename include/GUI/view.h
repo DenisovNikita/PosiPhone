@@ -13,6 +13,7 @@
 #include "move_item.h"
 #include "ui_view.h"
 
+namespace PosiPhone {
 class View : public QMainWindow {
     Q_OBJECT
     friend Model;
@@ -36,5 +37,7 @@ private slots:
     void remove_item(std::int64_t id);
     void set_pos(std::int64_t id, double x, double y);
 };
+
+}  // namespace PosiPhone
 
 #endif  // GUI_VIEW_H

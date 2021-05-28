@@ -4,6 +4,7 @@
 #include "model.h"
 #include "network_utils.h"
 
+namespace PosiPhone {
 namespace {
 const auto server_name = "tcp://188.119.67.234:" + std::to_string(port);
 
@@ -118,3 +119,5 @@ Client::~Client() {
     th.getEventBase()->runInEventBaseThread([this]() { stopConsuming(); });
     network_thread.detach();
 }
+
+}  // namespace PosiPhone

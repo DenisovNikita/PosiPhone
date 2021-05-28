@@ -6,6 +6,7 @@
 #include <utility>
 #include <vector>
 
+namespace PosiPhone {
 class Message {
 public:
     enum MessageType {
@@ -99,5 +100,7 @@ public:
         (ar) & (data_);
     }
 };
+
+}  // namespace PosiPhone
 
 #endif  // GUI_MESSAGE_H

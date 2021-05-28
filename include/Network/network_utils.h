@@ -8,6 +8,7 @@
 #include <zmq.hpp>
 #include "message.h"
 
+namespace PosiPhone {
 static const int port = 1234;
 static const int IO_THREADS_ = 1;
 
@@ -28,3 +29,5 @@ void send(zmq::socket_t &socket, Message &&msg);
 Message receive(zmq::socket_t &socket);
 
 Message send_and_receive(zmq::socket_t &socket, Message &&msg);
+
+}  // namespace PosiPhone

@@ -1,6 +1,7 @@
 #include "model.h"
 #include "network_utils.h"
 
+namespace PosiPhone {
 Model::Model()
     : ID(),
       client(this),
@@ -150,3 +151,5 @@ Model::~Model() {
     runner.stop();
     thread.getEventBase()->runInEventBaseThread([this]() { stopConsuming(); });
 }
+
+}  // namespace PosiPhone

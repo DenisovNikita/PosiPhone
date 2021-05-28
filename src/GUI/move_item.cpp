@@ -1,5 +1,6 @@
 #include "move_item.h"
 
+namespace PosiPhone {
 MoveItem::MoveItem(const User &user)
     : QGraphicsItem(), ID(user.id()), name(user.name()) {
 }
@@ -62,3 +63,5 @@ void OtherCircle::paint(QPainter *painter,
     painter->setBrush(Qt::red);
     MoveItem::paint(painter, option, widget);
 }
+
+}  // namespace PosiPhone

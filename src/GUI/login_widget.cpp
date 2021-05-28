@@ -1,6 +1,7 @@
 #include "login_widget.h"
 #include "model.h"
 
+namespace PosiPhone {
 LoginWidget::LoginWidget(Model *model)
     : QDialog(), model(model), line_edit(), button("Log In") {
     setWindowTitle("PosiPhone");
@@ -27,3 +28,5 @@ void LoginWidget::login_found() {
             .c_str());
     line_edit.clear();
 }
+
+}  // namespace PosiPhone

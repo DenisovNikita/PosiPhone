@@ -1,6 +1,7 @@
 #include "audio.h"
 #include "model.h"
 
+namespace PosiPhone {
 namespace {
 QIcon init_icon(const std::string &name, bool b) {
     std::string path = ":/" + name + (b ? "_on.png" : "_off.png");
@@ -87,3 +88,5 @@ Player::~Player() {
     runner.stop();
     buffer.close();
 }
+
+}  // namespace PosiPhone

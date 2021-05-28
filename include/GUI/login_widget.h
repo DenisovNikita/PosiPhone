@@ -10,6 +10,7 @@
 #include <string>
 #include "model_fwd.h"
 
+namespace PosiPhone {
 class LoginWidget : public QDialog {
     Q_OBJECT
     friend Model;
@@ -27,5 +28,7 @@ private slots:
 public:
     explicit LoginWidget(Model *model);
 };
+
+}  // namespace PosiPhone
 
 #endif  // GUI_LOGIN_WIDGET_H

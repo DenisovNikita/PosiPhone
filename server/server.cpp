@@ -2,6 +2,7 @@
 #include "network_utils.h"
 #include "server_network_module.h"
 
+namespace PosiPhone {
 namespace {
 int counter = 0;
 int get_new_id() {
@@ -19,32 +20,34 @@ int cur_time() {
 
 }  // namespace
 
+}  // namespace PosiPhone
+
 int main(int argc, char *argv[]) {
     google::InitGoogleLogging(argv[0]);
     FLAGS_logtostderr = 1;
-    Server_network_module server_module;
-    int start = cur_time();
+    PosiPhone::Server_network_module server_module;
+    int start = PosiPhone::cur_time();
     std::thread thread_for_clients_messages([&]() {
         while (true) {
-            Message msg = receive(server_module.socket);
+            PosiPhone::Message msg = PosiPhone::receive(server_module.socket);
             if (msg.id() != 0) {
-                int new_time = cur_time() - start;
+                int new_time = PosiPhone::cur_time() - start;
                 server_module.clients_data.update_last_time(msg.id(), new_time);
             }
 
-            if (msg.type() != Message::MessageType::Request_new_info) {
+            if (msg.type() != PosiPhone::Message::Request_new_info) {
                 LOG(INFO) << "server received from client: "
-                          << to_string[msg.type()] << "\n";
+                          << PosiPhone::to_string[msg.type()] << "\n";
             }
 
             if (msg.type() ==
-                Message::MessageType::Connect) {  // give client permission to
-                                                  // create user
+                PosiPhone::Message::Connect) {  // give client permission to
+                                                // create user
                 int new_id = -1;
                 if (!server_module.clients_data.usernames.count(msg.name())) {
-                    new_id = get_new_id();
-                    Message new_msg =
-                        Message::create<Message::MessageType::Create>(
+                    new_id = PosiPhone::get_new_id();
+                    PosiPhone::Message new_msg =
+                        PosiPhone::Message::create<PosiPhone::Message::Create>(
                             new_id, msg.name(), msg.x(), msg.y());
                     LOG(INFO) << "new_msg.id() = " << new_msg.id() << "\n";
                     server_module.send_to_all_clients_except_one(
@@ -52,7 +55,8 @@ int main(int argc, char *argv[]) {
                     for (auto [id, name] :
                          server_module.clients_data.name_by_id) {
                         server_module.clients_data.messages[new_id].push_back(
-                            Message::create<Message::MessageType::Create>(
+                            PosiPhone::Message::create<
+                                PosiPhone::Message::Create>(
                                 id, name,
                                 server_module.clients_data.crds[id].first,
                                 server_module.clients_data.crds[id].second));
@@ -60,24 +64,25 @@ int main(int argc, char *argv[]) {
                     server_module.clients_data.add_new_client(
                         new_id, msg.name(), msg.x(), msg.y());
                 }
-                Message info_msg =
-                    Message::create<Message::MessageType::Connect>(
+                PosiPhone::Message info_msg =
+                    PosiPhone::Message::create<PosiPhone::Message::Connect>(
                         new_id, msg.name(), msg.x(), msg.y());
                 server_module.send_to_one_client(std::move(info_msg));
             } else if (msg.type() ==
-                       Message::MessageType::Move) {  // send all, except author
+                       PosiPhone::Message::Move) {  // send all, except author
                 server_module.clients_data.crds[msg.id()] = {msg.x(), msg.y()};
-                server_module.send_to_one_client(Message());
+                server_module.send_to_one_client(PosiPhone::Message());
                 server_module.send_to_all_clients_except_one(std::move(msg));
-            } else if (msg.type() == Message::MessageType::AudioSource) {
+            } else if (msg.type() == PosiPhone::Message::AudioSource) {
                 // TODO: send msg to mixer
                 assert(false);
-            } else if (msg.type() == Message::MessageType::Check_connection) {
+            } else if (msg.type() == PosiPhone::Message::Check_connection) {
                 server_module.send_to_one_client(std::move(msg));
-            } else if (msg.type() == Message::MessageType::Request_new_info) {
+            } else if (msg.type() == PosiPhone::Message::Request_new_info) {
                 if (server_module.clients_data.messages[msg.id()].empty()) {
                     server_module.send_to_one_client(
-                        Message::create<Message::MessageType::Empty>());
+                        PosiPhone::Message::create<
+                            PosiPhone::Message::Empty>());
                 } else {
                     auto response =
                         server_module.clients_data.messages[msg.id()].front();
@@ -89,7 +94,7 @@ int main(int argc, char *argv[]) {
                 // from client to server
                 LOG(INFO)
                     << "Received bad message type (to server from client) = "
-                    << to_string[msg.type()] << "\n";
+                    << PosiPhone::to_string[msg.type()] << "\n";
                 assert(false);
             }
         }
@@ -97,20 +102,21 @@ int main(int argc, char *argv[]) {
 
     std::thread thread_for_detecting_dead_clients([&]() {
         while (true) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(TIME_SLEEP));
-            int new_time = cur_time() - start;
+            std::this_thread::sleep_for(
+                std::chrono::milliseconds(PosiPhone::TIME_SLEEP));
+            int new_time = PosiPhone::cur_time() - start;
             std::set<std::int64_t> removing;
             for (auto [tim, id] :
                  server_module.clients_data.last_time_for_all) {
-                if (new_time - tim >= TIMEOUT_MILLISECONDS) {
+                if (new_time - tim >= PosiPhone::TIMEOUT_MILLISECONDS) {
                     removing.insert(id);
                 }
             }
 
             for (auto id : removing) {
                 LOG(INFO) << "Will be removed id = " << id << "\n";
-                Message new_msg =
-                    Message::create<Message::MessageType::Destroy>(id);
+                PosiPhone::Message new_msg =
+                    PosiPhone::Message::create<PosiPhone::Message::Destroy>(id);
                 server_module.send_to_all_clients_except_one(
                     std::move(new_msg));
                 server_module.clients_data.remove_client(id);
