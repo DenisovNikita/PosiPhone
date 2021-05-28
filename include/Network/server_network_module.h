@@ -15,14 +15,27 @@
 #include "client_fwd.h"
 #include "message.h"
 
-class Server_network_module : public folly::NotificationQueue<Message>::Consumer {
+class Server_network_module
+    : public folly::NotificationQueue<Message>::Consumer {
 public:
-    std::unordered_set<std::string> usernames;
-    std::unordered_map<std::int64_t, std::pair<double, double>> crds;
-    std::unordered_map<std::int64_t, std::string> name_by_id;
-    std::unordered_map<std::int64_t, std::deque<Message>> messages;
-    std::set<std::pair<int, std::int64_t>> last_time_for_all;
-    std::unordered_map<std::int64_t, int> last_time_by_id;
+    struct Clients_data {
+        std::unordered_set<std::string> usernames;
+        std::unordered_map<std::int64_t, std::pair<double, double>> crds;
+        std::unordered_map<std::int64_t, std::string> name_by_id;
+        std::unordered_map<std::int64_t, std::deque<Message>> messages;
+        std::set<std::pair<int, std::int64_t>> last_time_for_all;
+        std::unordered_map<std::int64_t, int> last_time_by_id;
+
+        void update_last_time(std::int64_t id, int new_time);
+
+        void add_new_client(std::int64_t id,
+                            const std::string &name,
+                            double x,
+                            double y);
+
+        void remove_client(std::int64_t id);
+    };
+    Clients_data clients_data;
     zmq::context_t context;
     zmq::socket_t socket;
     folly::ScopedEventBaseThread th;

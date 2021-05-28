@@ -28,63 +28,62 @@ int main(int argc, char *argv[]) {
         while (true) {
             Message msg = receive(server_module.socket);
             if (msg.id() != 0) {
-                int prev = server_module.last_time_by_id[msg.id()];
-                server_module.last_time_for_all.erase({prev, msg.id()});
-                int cur_int = cur_time() - start;
-                server_module.last_time_for_all.insert({cur_int, msg.id()});
-                server_module.last_time_by_id[msg.id()] = cur_int;
+                int new_time = cur_time() - start;
+                server_module.clients_data.update_last_time(msg.id(), new_time);
             }
 
             if (msg.type() != Message::MessageType::Request_new_info) {
                 LOG(INFO) << "server received from client: "
                           << to_string[msg.type()] << "\n";
             }
-            if (msg.type() == Message::MessageType::Check_connection) {
-                server_module.send_to_one_client(std::move(msg));
-            } else if (msg.type() == Message::MessageType::Request_new_info) {
-                if (server_module.messages[msg.id()].empty()) {
-                    server_module.send_to_one_client(
-                        Message::create<Message::MessageType::Empty>());
-                } else {
-                    auto response = server_module.messages[msg.id()].front();
-                    server_module.send_to_one_client(std::move(response));
-                    server_module.messages[msg.id()].pop_front();
-                }
-            } else if (msg.type() ==
-                       Message::MessageType::
-                           Connect) {  // give client permission to create user
+
+            if (msg.type() ==
+                Message::MessageType::Connect) {  // give client permission to
+                                                  // create user
                 int new_id = -1;
-                if (!server_module.usernames.count(msg.name())) {
+                if (!server_module.clients_data.usernames.count(msg.name())) {
                     new_id = get_new_id();
-                    server_module.usernames.insert(msg.name());
-                    server_module.crds[new_id] = {msg.x(), msg.y()};
-                    server_module.name_by_id[new_id] = msg.name();
                     Message new_msg =
                         Message::create<Message::MessageType::Create>(
                             new_id, msg.name(), msg.x(), msg.y());
                     LOG(INFO) << "new_msg.id() = " << new_msg.id() << "\n";
                     server_module.send_to_all_clients_except_one(
                         std::move(new_msg));
-                    for (auto [id, name] : server_module.name_by_id) {
-                        server_module.messages[new_id].push_back(
+                    for (auto [id, name] :
+                         server_module.clients_data.name_by_id) {
+                        server_module.clients_data.messages[new_id].push_back(
                             Message::create<Message::MessageType::Create>(
-                                id, name, server_module.crds[id].first,
-                                server_module.crds[id].second));
+                                id, name,
+                                server_module.clients_data.crds[id].first,
+                                server_module.clients_data.crds[id].second));
                     }
+                    server_module.clients_data.add_new_client(
+                        new_id, msg.name(), msg.x(), msg.y());
                 }
                 Message info_msg =
                     Message::create<Message::MessageType::Connect>(
                         new_id, msg.name(), msg.x(), msg.y());
                 server_module.send_to_one_client(std::move(info_msg));
+            } else if (msg.type() ==
+                       Message::MessageType::Move) {  // send all, except author
+                server_module.clients_data.crds[msg.id()] = {msg.x(), msg.y()};
+                server_module.send_to_one_client(Message());
+                server_module.send_to_all_clients_except_one(std::move(msg));
             } else if (msg.type() == Message::MessageType::AudioSource) {
                 // TODO: send msg to mixer
                 assert(false);
-            } else if (msg.type() ==
-                       Message::MessageType::Move) {  // send all, except
-                                                      // author
-                server_module.crds[msg.id()] = {msg.x(), msg.y()};
-                server_module.send_to_one_client(Message());
-                server_module.send_to_all_clients_except_one(std::move(msg));
+            } else if (msg.type() == Message::MessageType::Check_connection) {
+                server_module.send_to_one_client(std::move(msg));
+            } else if (msg.type() == Message::MessageType::Request_new_info) {
+                if (server_module.clients_data.messages[msg.id()].empty()) {
+                    server_module.send_to_one_client(
+                        Message::create<Message::MessageType::Empty>());
+                } else {
+                    auto response =
+                        server_module.clients_data.messages[msg.id()].front();
+                    server_module.send_to_one_client(std::move(response));
+                    server_module.clients_data.messages[msg.id()].pop_front();
+                }
             } else {
                 // Other MessageType's are not suitable situation for message
                 // from client to server
@@ -99,27 +98,22 @@ int main(int argc, char *argv[]) {
     std::thread thread_for_detecting_dead_clients([&]() {
         while (true) {
             std::this_thread::sleep_for(std::chrono::milliseconds(TIME_SLEEP));
-            int curr_int = cur_time() - start;
+            int new_time = cur_time() - start;
             std::set<std::int64_t> removing;
-            for (auto [tim, id] : server_module.last_time_for_all) {
-                if (curr_int - tim >= TIMEOUT_MILLISECONDS) {
+            for (auto [tim, id] :
+                 server_module.clients_data.last_time_for_all) {
+                if (new_time - tim >= TIMEOUT_MILLISECONDS) {
                     removing.insert(id);
                 }
             }
 
             for (auto id : removing) {
-                LOG(INFO) << "id = " << id << " will be removed\n";
+                LOG(INFO) << "Will be removed id = " << id << "\n";
                 Message new_msg =
                     Message::create<Message::MessageType::Destroy>(id);
                 server_module.send_to_all_clients_except_one(
                     std::move(new_msg));
-                server_module.usernames.erase(server_module.name_by_id[id]);
-                server_module.crds.erase(id);
-                server_module.name_by_id.erase(id);
-                server_module.messages.erase(id);
-                server_module.last_time_for_all.erase(
-                    {server_module.last_time_by_id[id], id});
-                server_module.last_time_by_id.erase(id);
+                server_module.clients_data.remove_client(id);
             }
         }
     });
