@@ -14,10 +14,6 @@ Server_network_module::Server_network_module()
     socket.bind("tcp://*:" + std::to_string(port));
 }
 
-folly::NotificationQueue<Message> *Server_network_module::get_queue() {
-    return &queue;
-}
-
 void Server_network_module::messageAvailable(Message &&msg) noexcept {
     if (msg.type() == Message::MessageType::AudioResult) {  // send to one
                                                             // client from mixer
