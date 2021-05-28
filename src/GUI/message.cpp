@@ -1,7 +1,5 @@
 #include "message.h"
 #include <iostream>
-#include <glog/logging.h>
-#include <chrono>
 #include "network_utils.h"
 
 namespace {
@@ -10,11 +8,10 @@ long long cur_time() {
                std::chrono::system_clock::now().time_since_epoch())
         .count();
 }
-
 }  // namespace
 
 namespace PosiPhone {
-Message::Message() : type_(), id_(), name_(), x_(), y_(), data_() {
+Message::Message() : type_(), id_(), name_(), x_(), y_(), data_(), time_() {
 }
 
 Message::Message(MessageType type,
@@ -29,7 +26,7 @@ Message::Message(MessageType type,
       name_(std::move(name)),
       x_(x),
       y_(y),
-      create_time_(cur_time()) {
+      time_(cur_time()) {
     data_.assign(data, data + size);
 }
 
@@ -59,6 +56,10 @@ const char *Message::data() const {
 
 int Message::size() const {
     return static_cast<int>(data_.size());
+}
+
+long long Message::time() const {
+    return time_;
 }
 
 Message Message::create_by_id(MessageType type, std::int64_t id) {
@@ -96,28 +97,14 @@ Message Message::create_by_id_x_y_data(MessageType type,
     return Message(type, id, {}, x, y, data, size);
 }
 
-long long Message::create_time() const {
-    return create_time_;
-}
-
 std::ostream &operator<<(std::ostream &os, const Message &msg) {
     os << "Got " << to_string[msg.type_] << " message\n";
     os << "id = " << msg.id_ << "\n";
     os << "x  = " << msg.x_ << "\n";
     os << "y  = " << msg.y_ << "\n";
     os << "name = " << msg.name_ << "\n";
-    os << "create_time  = " << msg.create_time_ << "\n";
+    os << "create_time  = " << msg.time_ << "\n";
     return os;
-}
-
-void Message::print(const std::string &s) {
-    LOG(INFO) << s << ":\n";
-    LOG(INFO) << "Got " << to_string[type()] << " message\n";
-    LOG(INFO) << "id = " << id() << "\n";
-    LOG(INFO) << "x  = " << x() << "\n";
-    LOG(INFO) << "y  = " << y() << "\n";
-    LOG(INFO) << "name = " << name() << "\n";
-    LOG(INFO) << "create_time  = " << create_time() << "\n";
 }
 
 }  // namespace PosiPhone

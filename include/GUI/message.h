@@ -1,6 +1,7 @@
 #ifndef GUI_MESSAGE_H
 #define GUI_MESSAGE_H
 
+#include <chrono>
 #include <cstdint>
 #include <iosfwd>
 #include <string>
@@ -29,7 +30,7 @@ private:
     double x_;
     double y_;
     std::vector<char> data_;
-    long long create_time_;
+    long long time_;
 
     Message(MessageType type,
             std::int64_t id,
@@ -61,10 +62,11 @@ private:
 
 public:
     Message();
-    Message(const Message &) = default;
-    Message(Message &&) = default;
-    Message &operator=(const Message &) = default;
-    Message &operator=(Message &&) = default;
+    Message(const Message &) = delete;
+    Message(Message &&) noexcept = default;
+    Message &operator=(const Message &) = delete;
+    Message &operator=(Message &&) noexcept = default;
+    ~Message() noexcept = default;
     [[nodiscard]] MessageType type() const;
     [[nodiscard]] std::int64_t id() const;
     [[nodiscard]] std::string name() const;
@@ -72,8 +74,7 @@ public:
     [[nodiscard]] double y() const;
     [[nodiscard]] const char *data() const;
     [[nodiscard]] int size() const;
-    [[nodiscard]] long long create_time() const;
-    void print(const std::string &s);
+    [[nodiscard]] long long time() const;
     friend std::ostream &operator<<(std::ostream &os, const Message &msg);
     template <MessageType type, typename... Args>
     static Message create(Args &&...args) {
@@ -87,7 +88,8 @@ public:
         } else if constexpr (type == MessageType::AudioResult ||
                              type == MessageType::AudioSource) {
             return create_by_id_data(type, std::forward<Args>(args)...);
-            // TODO pass coords to AudioSource
+            // } else if constexpr (type == Message::AudioSource) {
+            // return create_by_id_x_y_data(type, std::forward<Args>(args)...);
         } else if constexpr (type == MessageType::Destroy ||
                              type == MessageType::Check_connection ||
                              type == MessageType::Request_new_info) {
@@ -103,7 +105,7 @@ public:
         (ar) & (x_);
         (ar) & (y_);
         (ar) & (data_);
-        (ar) & (create_time_);
+        (ar) & (time_);
     }
 };
 
