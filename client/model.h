@@ -41,6 +41,8 @@ public:
     Model();
     void messageAvailable(Message &&msg) noexcept override;
     std::int64_t get_id() const;
+    double get_x();
+    double get_y();
     folly::NotificationQueue<Message> *get_queue();
     void send_message(Message &&msg);
     void read_audio_message(Message &msg);
