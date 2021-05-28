@@ -31,7 +31,7 @@ Model::Model()
 }
 
 void Model::messageAvailable(Message &&msg) noexcept {
-    LOG(INFO) << "got " << to_string[msg.type()] << " message\n";
+    LOG(INFO) << "client -> model\n" << msg;
     if (msg.type() == Message::Connect) {
         if (!client.is_ok_connection()) {
             emit close_view_signal();
@@ -68,9 +68,7 @@ void Model::send_message(Message &&msg) {
 }
 
 void Model::read_audio_message(Message &msg) {
-    if (!audio_queue.read(msg)) {
-        LOG(WARNING) << "trying to read from empty audio queue\n";
-    }
+    audio_queue.read(msg);
 }
 
 void Model::write_audio_message(Message &&msg) {
