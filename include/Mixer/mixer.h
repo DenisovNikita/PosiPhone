@@ -7,6 +7,7 @@
 ♿ ОСТОРОЖНО ♿ ПРОГРАММИРУЕТ ♿ ГРОМОВ ♿ ФЕДОР ♿
 */
 
+#include <folly/experimental/ThreadedRepeatingFunctionRunner.h>
 #include <folly/io/async/NotificationQueue.h>
 #include <folly/io/async/ScopedEventBaseThread.h>
 #include <cassert>
@@ -46,7 +47,6 @@ struct Message {
     const int room_id;
     const long long time;
     AudioFile<float> data;
-
     Message(double x_,
             double y_,
             int id_,
@@ -71,14 +71,29 @@ struct time_compare {
 
 class Mixer : public folly::NotificationQueue<Message>::Consumer {
 private:
+    // folly::ThreadedRepeatingFunctionRunner runner;
     folly::ScopedEventBaseThread th;
-    std::vector<std::multiset<Message, time_compare>> M;
+    std::vector<std::multiset<Message, time_compare>> messages_sorted;
     AudioFile<float> sample;
     folly::NotificationQueue<Message> queue;
-    long long normal_delay = 0, number_id = 0;
+    long long normal_delay = 50, number_id = 0;
+    std::vector<Message> request_answer = {};
 
 public:
-    Mixer();
+    Mixer() {
+        std::ifstream config("include/Mixer/config.txt");
+        config >> normal_delay >> number_id;
+        messages_sorted.resize(10);
+        for (auto &m : messages_sorted) {
+            m.clear();
+        }
+        sample.samples.resize(1);
+        sample.samples[0].resize(2, 0);
+
+        auto *eventBase = th.getEventBase();
+        eventBase->runInEventBaseThread(
+            [eventBase, this]() { startConsuming(eventBase, &queue); });
+    }
     void messageAvailable(Message &&msg) noexcept override;
     void putMessage(const Message &msg);
     void add_id(int new_ids);

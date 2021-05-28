@@ -12,7 +12,7 @@ double utils::utils::count_coef(double x1, double y1, double x2, double y2) {
 
 std::vector<AudioFile<float>> mixer::split(AudioFile<float> file, double dur) {
     std::vector<AudioFile<float>> splitted;
-    splitted.resize(ceil(file.getLengthInSeconds() / dur) + 1);
+    splitted.resize(floor(file.getLengthInSeconds() / dur));
     for (int i = 0; i < splitted.size(); i++) {
         splitted[i].setAudioBufferSize(file.getNumChannels(),
                                        ceil(dur * file.getSampleRate()));
@@ -66,21 +66,12 @@ std::vector<mixer::Message> mixer::try_to_mix(
     return result;
 }
 
-mixer::Mixer::Mixer() {
-    std::ifstream config("config.txt");
-    config >> normal_delay >> number_id;
-
-    auto *eventBase = th.getEventBase();
-    eventBase->runInEventBaseThread(
-        [eventBase, this]() { startConsuming(eventBase, &queue); });
-
-    M.resize(number_id);
-    sample.samples.resize(1);
-    sample.samples[0].resize(2, 0);
-}
-
 void mixer::Mixer::messageAvailable(Message &&msg) noexcept {
-    M[msg.id].insert(msg);
+    if (messages_sorted[msg.id].empty()) {
+        messages_sorted[msg.id].emplace(msg);
+    } else {
+        messages_sorted[msg.id].insert(msg);
+    }
 }
 
 void mixer::Mixer::putMessage(const Message &msg) {
@@ -91,14 +82,14 @@ void mixer::Mixer::add_id(int new_ids) {
     if (new_ids <= number_id) {
         return;
     }
-    M.resize(new_ids);
+    messages_sorted.resize(new_ids);
     number_id = new_ids;
 }
 
 std::vector<mixer::Message> mixer::Mixer::mix() {
     long long ticker = utils::utils().cur_time();
     std::vector<Message> input;
-    for (auto &m : M) {
+    for (auto &m : messages_sorted) {
         while (!m.empty() && m.begin()->time < ticker - normal_delay * 2) {
             m.erase(m.begin());
         }
