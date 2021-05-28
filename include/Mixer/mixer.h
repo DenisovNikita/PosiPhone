@@ -22,7 +22,7 @@
 #include <string>
 #include <utility>
 #include <vector>
-#include "mixer/AudioFile/AudioFile.h"
+#include "include/GUI/message.h"
 
 namespace utils {
 
@@ -40,64 +40,64 @@ std::vector<AudioFile<float>> split(AudioFile<float> file, double dur);
 
 AudioFile<float> join(const std::vector<AudioFile<float>> &separate);
 
-struct Message {
+struct AudioMessage {
     const double x;
     const double y;
     const int id;
-    const int room_id;
     const long long time;
     AudioFile<float> data;
-    Message(double x_,
-            double y_,
-            int id_,
-            int room_id,
-            long long time_,
-            AudioFile<float> data_)
-        : x(x_),
-          y(y_),
-          id(id_),
-          room_id(room_id),
-          time(time_),
-          data(std::move(data_)){};
+    AudioMessage(double x_,
+                 double y_,
+                 int id_,
+                 int room_id,
+                 long long time_,
+                 AudioFile<float> data_)
+        : x(x_), y(y_), id(id_), time(time_), data(std::move(data_)){};
 };
 
-std::vector<Message> try_to_mix(std::vector<Message> &vec);
+std::vector<AudioMessage> try_to_mix(std::vector<AudioMessage> &vec);
 
 struct time_compare {
-    bool operator()(const Message &a, const Message &b) const {
+    bool operator()(const AudioMessage &a, const AudioMessage &b) const {
         return (a.time < b.time);
     };
 };
 
-class Mixer : public folly::NotificationQueue<Message>::Consumer {
-private:
-    // folly::ThreadedRepeatingFunctionRunner runner;
+class Mixer final : public folly::NotificationQueue<AudioMessage>::Consumer {
     folly::ScopedEventBaseThread th;
-    std::vector<std::multiset<Message, time_compare>> messages_sorted;
+    std::vector<std::multiset<AudioMessage, time_compare>> messages_sorted;
     AudioFile<float> sample;
-    folly::NotificationQueue<Message> queue;
-    long long normal_delay = 50, number_id = 0;
-    std::vector<Message> request_answer = {};
+    folly::NotificationQueue<AudioMessage> queue;
+    long long normal_delay = 50, number_id = 10;
+    std::vector<PosiPhone::Message> request_answer = {};
+    folly::ThreadedRepeatingFunctionRunner runner;
 
 public:
     Mixer() {
         std::ifstream config("include/Mixer/config.txt");
         config >> normal_delay >> number_id;
         messages_sorted.resize(10);
-        for (auto &m : messages_sorted) {
-            m.clear();
-        }
         sample.samples.resize(1);
         sample.samples[0].resize(2, 0);
+
+        runner.add("Mixer", [this]() {
+            request_answer = mix();
+            return std::chrono::milliseconds(50);
+        });
 
         auto *eventBase = th.getEventBase();
         eventBase->runInEventBaseThread(
             [eventBase, this]() { startConsuming(eventBase, &queue); });
     }
-    void messageAvailable(Message &&msg) noexcept override;
-    void putMessage(const Message &msg);
+    void messageAvailable(AudioMessage &&msg) noexcept override;
+    void putMessage(const PosiPhone::Message &msg);
     void add_id(int new_ids);
-    std::vector<Message> mix();
+    std::vector<PosiPhone::Message> get_messages();
+    std::vector<PosiPhone::Message> mix();
+    ~Mixer() override {
+        runner.stop();
+        th.getEventBase()->runInEventBaseThread([this]() { stopConsuming(); });
+    }
 };
 }  // namespace mixer
 

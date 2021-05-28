@@ -50,9 +50,9 @@ AudioFile<float> mixer::join(const std::vector<AudioFile<float>> &separate) {
     return joint;
 }
 
-std::vector<mixer::Message> mixer::try_to_mix(
-    std::vector<mixer::Message> &vec) {
-    std::vector<mixer::Message> result = vec;
+std::vector<mixer::AudioMessage> mixer::try_to_mix(
+    std::vector<mixer::AudioMessage> &vec) {
+    std::vector<mixer::AudioMessage> result = vec;
     for (auto &r : result) {
         for (auto v : vec) {
             if (v.id == r.id) {
@@ -66,7 +66,7 @@ std::vector<mixer::Message> mixer::try_to_mix(
     return result;
 }
 
-void mixer::Mixer::messageAvailable(Message &&msg) noexcept {
+void mixer::Mixer::messageAvailable(AudioMessage &&msg) noexcept {
     if (messages_sorted[msg.id].empty()) {
         messages_sorted[msg.id].emplace(msg);
     } else {
@@ -74,7 +74,7 @@ void mixer::Mixer::messageAvailable(Message &&msg) noexcept {
     }
 }
 
-void mixer::Mixer::putMessage(const Message &msg) {
+void mixer::Mixer::putMessage(const PosiPhone::Message &msg) {
     queue.putMessage(msg);
 }
 
@@ -86,9 +86,13 @@ void mixer::Mixer::add_id(int new_ids) {
     number_id = new_ids;
 }
 
-std::vector<mixer::Message> mixer::Mixer::mix() {
+std::vector<mixer::AudioMessage> mixer::Mixer::get_messages() {
+    return request_answer;
+}
+
+std::vector<PosiPhone::Message> mixer::Mixer::mix() {
     long long ticker = utils::utils().cur_time();
-    std::vector<Message> input;
+    std::vector<AudioMessage> input;
     for (auto &m : messages_sorted) {
         while (!m.empty() && m.begin()->time < ticker - normal_delay * 2) {
             m.erase(m.begin());
