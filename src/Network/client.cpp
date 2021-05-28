@@ -52,7 +52,7 @@ Client::Client(Model *m)
                           << to_string[result.type()] << std::endl;
             }
             if (result.type() == Message::MessageType::AudioResult) {
-                // TODO: put in model audio queue
+                model->write_audio_message(std::move(result));
             } else if (result.type() == Message::MessageType::Create ||
                        result.type() == Message::MessageType::Move ||
                        result.type() == Message::MessageType::Destroy) {
