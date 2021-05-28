@@ -44,10 +44,10 @@ void Model::messageAvailable(Message &&msg) noexcept {
         set_pos(std::move(msg));
     } else if (msg.type() == Message::AudioSource) {
         client.get_queue()->putMessage(std::move(msg));
-    } else if (msg.type() == Message::AudioResult) {
-        // TODO play recording
     } else if (msg.type() == Message::Destroy) {
         remove_item(std::move(msg));
+    } else {
+        LOG(ERROR) << "Unknown query\n";
     }
 }
 
@@ -57,6 +57,14 @@ std::int64_t Model::get_id() const {
 
 folly::NotificationQueue<Message> *Model::get_queue() {
     return &queue;
+}
+
+void Model::send_message(Message &&msg) {
+    try {
+        queue.putMessage(std::move(msg));
+    } catch (const std::exception &e) {
+        LOG(ERROR) << e.what() << '\n';
+    }
 }
 
 void Model::read_audio_message(Message &msg) {

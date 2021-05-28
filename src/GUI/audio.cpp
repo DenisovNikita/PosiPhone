@@ -52,7 +52,7 @@ Recorder::Recorder(Model *model, QWidget *parent)
     recorder.start(&buffer);
     runner.add("Recorder", [this, model]() {
         if (isChecked()) {
-            model->write_audio_message(Message::create<Message::AudioSource>(
+            model->send_message(Message::create<Message::AudioSource>(
                 model->get_id(), buffer.buffer().data(), buffer.buffer().size()));
         }
         buffer.buffer().clear();
