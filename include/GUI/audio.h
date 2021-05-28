@@ -32,7 +32,6 @@ class Recorder final : public Audio {
     Q_OBJECT
     QAudioInput recorder;
     QBuffer buffer;
-    QByteArray &array;
     folly::ThreadedRepeatingFunctionRunner runner;
 
 public:
@@ -44,7 +43,6 @@ class Player final : public Audio {
     Q_OBJECT
     QAudioOutput player;
     QBuffer buffer;
-    QByteArray &array;
     folly::ThreadedRepeatingFunctionRunner runner;
 
 public:
