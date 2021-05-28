@@ -6,8 +6,8 @@
 * [Done] Init time in message constructors
 * [Done] Forbid copying message
 * [Done] Make data a pointer
-* Complete TODOs in code
-* Kick mixer and feed queue from server (server.cpp)
+* [Done] Complete TODOs in code
+* [Done] Kick mixer and feed queue from server (server.cpp)
 * [Extra] Send requests something new per 50 milliseconds and response last change from server
 * [Extra] Make review improvements (smart pointer, maybe something else)
 * [Extra] Deal with zmq throwing exception when close client window

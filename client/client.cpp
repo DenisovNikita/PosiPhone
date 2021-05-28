@@ -13,8 +13,6 @@ int set_connection(zmq::socket_t &socket) {
     return 0;
 }
 
-const int TIME_SLEEP = 50;
-
 }  // namespace
 
 Client::Client(Model *m)
@@ -42,7 +40,6 @@ Client::Client(Model *m)
         int my_id = model->get_id();
         assert(my_id != 0);
         while (true) {
-            //            std::this_thread::sleep_for(std::chrono::milliseconds(TIME_SLEEP));
             Message pullRequest =
                 Message::create<Message::MessageType::Request_new_info>(my_id);
             send(local_socket, std::move(pullRequest));
