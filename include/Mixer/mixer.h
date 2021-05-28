@@ -3,6 +3,10 @@
 
 //#define _GLIBCXX_DEBUG
 
+/*
+♿ ОСТОРОЖНО ♿ ПРОГРАММИРУЕТ ♿ ГРОМОВ ♿ ФЕДОР ♿
+*/
+
 #include <folly/io/async/NotificationQueue.h>
 #include <folly/io/async/ScopedEventBaseThread.h>
 #include <cassert>
@@ -19,21 +23,21 @@
 #include <vector>
 #include "mixer/AudioFile/AudioFile.h"
 
+namespace utils {
+
+class utils {
+public:
+    long long cur_time();
+    double count_coef(double x1, double y1, double x2, double y2);
+};
+
+}  // namespace utils
+
 namespace mixer {
 
 std::vector<AudioFile<float>> split(AudioFile<float> file, double dur);
 
 AudioFile<float> join(const std::vector<AudioFile<float>> &separate);
-
-long long cur_time() {
-    return std::chrono::duration_cast<std::chrono::milliseconds>(
-               std::chrono::system_clock::now().time_since_epoch())
-        .count();
-}
-
-double count_coef(double x1, double y1, double x2, double y2) {
-    return 1.0 / fmax(1.0, sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2)));
-}
 
 struct Message {
     const double x;

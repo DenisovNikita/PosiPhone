@@ -1,5 +1,15 @@
 #include "include/Mixer/mixer.h"
 
+long long utils::utils::cur_time() {
+    return std::chrono::duration_cast<std::chrono::milliseconds>(
+               std::chrono::system_clock::now().time_since_epoch())
+        .count();
+}
+
+double utils::utils::count_coef(double x1, double y1, double x2, double y2) {
+    return 1.0 / fmax(1.0, sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2)));
+}
+
 std::vector<AudioFile<float>> mixer::split(AudioFile<float> file, double dur) {
     std::vector<AudioFile<float>> splitted;
     splitted.resize(ceil(file.getLengthInSeconds() / dur) + 1);
@@ -48,8 +58,8 @@ std::vector<mixer::Message> mixer::try_to_mix(
             if (v.id == r.id) {
                 r.data.addAudioBuffer(v.data.samples, -1);
             } else {
-                r.data.addAudioBuffer(v.data.samples,
-                                      mixer::count_coef(r.x, r.y, v.x, v.y));
+                r.data.addAudioBuffer(v.data.samples, utils::utils().count_coef(
+                                                          r.x, r.y, v.x, v.y));
             }
         }
     }
@@ -86,7 +96,7 @@ void mixer::Mixer::add_id(int new_ids) {
 }
 
 std::vector<mixer::Message> mixer::Mixer::mix() {
-    long long ticker = cur_time();
+    long long ticker = utils::utils().cur_time();
     std::vector<Message> input;
     for (auto &m : M) {
         while (!m.empty() && m.begin()->time < ticker - normal_delay * 2) {
@@ -98,8 +108,4 @@ std::vector<mixer::Message> mixer::Mixer::mix() {
         }
     }
     return try_to_mix(input);
-}
-
-int main() {
-    return 0;
 }
