@@ -31,7 +31,6 @@ add_executable(${PROJECT_NAME}
     include/GUI/model_fwd.h
     include/GUI/model.h
     include/GUI/move_item.h
-    include/GUI/producer.h
     include/GUI/user.h
     include/GUI/view.h
     include/Network/client.h
@@ -47,7 +46,6 @@ add_executable(${PROJECT_NAME}
     src/GUI/mock.cpp
     src/GUI/model.cpp
     src/GUI/move_item.cpp
-    src/GUI/producer.cpp
     src/GUI/user.cpp
     src/GUI/view.cpp
     src/Network/client.cpp

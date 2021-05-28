@@ -1,4 +1,5 @@
 #include "move_item.h"
+#include "model.h"
 
 namespace PosiPhone {
 MoveItem::MoveItem(const User &user)
@@ -6,7 +7,7 @@ MoveItem::MoveItem(const User &user)
 }
 
 QRectF MoveItem::boundingRect() const {
-    return QRectF(-RADIUS, -RADIUS, DIAMETER, DIAMETER);
+    return QRectF(-RADIUS, -RADIUS, 2 * RADIUS, 2 * RADIUS);
 }
 
 QPainterPath MoveItem::shape() const {
@@ -19,14 +20,14 @@ void MoveItem::paint(QPainter *painter,
                      const QStyleOptionGraphicsItem *option,
                      QWidget *widget) {
     painter->setPen(Qt::black);
-    painter->drawEllipse(-RADIUS, -RADIUS, DIAMETER, DIAMETER);
+    painter->drawEllipse(boundingRect());
     painter->drawText(boundingRect(), Qt::AlignCenter, name.c_str());
     Q_UNUSED(option)
     Q_UNUSED(widget)
 }
 
 MyCircle::MyCircle(const User &user, Model *model)
-    : MoveItem(user), producer(model) {
+    : MoveItem(user), model(model) {
     setPos(QPointF(user.x(), user.y()));
 }
 
@@ -39,7 +40,7 @@ void MyCircle::paint(QPainter *painter,
 
 void MyCircle::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
     QPointF pos = event->scenePos();
-    producer.send_message(
+    model->get_queue()->putMessage(
         Message::create<Message::MessageType::Move>(ID, pos.x(), pos.y()));
 }
 

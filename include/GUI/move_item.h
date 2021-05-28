@@ -8,7 +8,7 @@
 #include <QPainter>
 #include <cstdint>
 #include <string>
-#include "producer.h"
+#include "model_fwd.h"
 #include "user.h"
 
 namespace PosiPhone {
@@ -18,7 +18,7 @@ protected:
     explicit MoveItem(const User &user);
     std::int64_t ID;
     std::string name;
-    const int RADIUS = 30, DIAMETER = 2 * RADIUS, DELTA = 3;
+    const int RADIUS = 30;
     [[nodiscard]] QRectF boundingRect() const override;
     [[nodiscard]] QPainterPath shape() const override;
     void paint(QPainter *painter,
@@ -27,7 +27,7 @@ protected:
 };
 
 class MyCircle : public MoveItem {
-    Producer producer;
+    Model *model;
 
 public:
     MyCircle(const User &user, Model *model);
