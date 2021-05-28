@@ -11,7 +11,7 @@ Model::Model()
       login_widget(this),
       view(this) {
     qRegisterMetaType<std::int64_t>("std::int64_t");
-    qRegisterMetaType<User>("User");
+    qRegisterMetaType<PosiPhone::User>("PosiPhone::User");
 
     connect_to_view(&view);
     connect_to_login_widget(&login_widget);
@@ -59,13 +59,15 @@ folly::NotificationQueue<Message> *Model::get_queue() {
     return &queue;
 }
 
-bool Model::read_audio_message(Message &msg) {
-    return audio_queue.read(msg);
+void Model::read_audio_message(Message &msg) {
+    if (!audio_queue.read(msg)) {
+        LOG(WARNING) << "trying to read from empty audio queue\n";
+    }
 }
 
 void Model::write_audio_message(Message &&msg) {
     if (!audio_queue.write(std::move(msg))) {
-        LOG(WARNING) << "audio queue is full";
+        LOG(WARNING) << "trying to write into full audio queue\n";
     }
 }
 

@@ -42,7 +42,7 @@ public:
     void messageAvailable(Message &&msg) noexcept override;
     std::int64_t get_id() const;
     folly::NotificationQueue<Message> *get_queue();
-    bool read_audio_message(Message &msg);
+    void read_audio_message(Message &msg);
     void write_audio_message(Message &&msg);
     ~Model() override;
 
@@ -55,7 +55,7 @@ private:
     void set_pos(Message &&msg);
 
 signals:
-    void add_item_signal(const User &user, int type);
+    void add_item_signal(const PosiPhone::User &user, int type);
     void remove_item_signal(std::int64_t id);
     void set_pos_signal(std::int64_t id, double x, double y);
     void open_view_signal();

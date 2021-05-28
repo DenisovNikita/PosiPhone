@@ -2,8 +2,7 @@
 #include "model.h"
 
 namespace PosiPhone {
-MoveItem::MoveItem(const User &user)
-    : QGraphicsItem(), ID(user.id()), name(user.name()) {
+MoveItem::MoveItem(const User &user) : QGraphicsItem(), name(user.name()) {
 }
 
 QRectF MoveItem::boundingRect() const {
@@ -40,8 +39,8 @@ void MyCircle::paint(QPainter *painter,
 
 void MyCircle::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
     QPointF pos = event->scenePos();
-    model->get_queue()->putMessage(
-        Message::create<Message::MessageType::Move>(ID, pos.x(), pos.y()));
+    model->get_queue()->putMessage(Message::create<Message::MessageType::Move>(
+        model->get_id(), pos.x(), pos.y()));
 }
 
 void MyCircle::mousePressEvent(QGraphicsSceneMouseEvent *event) {

@@ -16,7 +16,6 @@ class MoveItem : public QGraphicsItem {
     Q_INTERFACES(QGraphicsItem)
 protected:
     explicit MoveItem(const User &user);
-    std::int64_t ID;
     std::string name;
     const int RADIUS = 30;
     [[nodiscard]] QRectF boundingRect() const override;
