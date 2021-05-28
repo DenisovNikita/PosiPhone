@@ -87,9 +87,8 @@ int main(int argc, char *argv[]) {
                         PosiPhone::Message::create<
                             PosiPhone::Message::Empty>());
                 } else {
-                    auto response =
-                        server_module.clients_data.messages[msg.id()].front();
-                    server_module.send_to_one_client(std::move(response));
+                    server_module.send_to_one_client(std::move(
+                        server_module.clients_data.messages[msg.id()].front()));
                     server_module.clients_data.messages[msg.id()].pop_front();
                 }
             } else {

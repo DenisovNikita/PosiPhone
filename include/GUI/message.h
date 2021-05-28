@@ -62,7 +62,7 @@ private:
 
 public:
     Message();
-    Message(const Message &) = delete;
+    Message(const Message &) = default;
     Message(Message &&) noexcept = default;
     Message &operator=(const Message &) = delete;
     Message &operator=(Message &&) noexcept = default;
@@ -76,6 +76,7 @@ public:
     [[nodiscard]] int size() const;
     [[nodiscard]] long long time() const;
     friend std::ostream &operator<<(std::ostream &os, const Message &msg);
+    void print(const std::string &s);
     template <MessageType type, typename... Args>
     static Message create(Args &&...args) {
         if constexpr (type == MessageType::Empty) {

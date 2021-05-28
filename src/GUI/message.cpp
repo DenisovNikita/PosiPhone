@@ -1,6 +1,7 @@
 #include "message.h"
 #include <iostream>
 #include "network_utils.h"
+#include <glog/logging.h>
 
 namespace {
 long long cur_time() {
@@ -105,6 +106,16 @@ std::ostream &operator<<(std::ostream &os, const Message &msg) {
     os << "name = " << msg.name_ << "\n";
     os << "create_time  = " << msg.time_ << "\n";
     return os;
+}
+
+void Message::print(const std::string &s) {
+    LOG(INFO) << s << ":\n";
+    LOG(INFO) << "Got " << to_string[type()] << " message\n";
+    LOG(INFO) << "id = " << id() << "\n";
+    LOG(INFO) << "x  = " << x() << "\n";
+    LOG(INFO) << "y  = " << y() << "\n";
+    LOG(INFO) << "name = " << name() << "\n";
+    LOG(INFO) << "create_time  = " << time() << "\n";
 }
 
 }  // namespace PosiPhone
