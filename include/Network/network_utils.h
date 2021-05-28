@@ -9,7 +9,7 @@
 #include "message.h"
 
 namespace PosiPhone {
-static const int port = 1234;
+static const int port = 12345;
 static const int IO_THREADS_ = 1;
 
 static std::unordered_map<int, std::string> to_string = {

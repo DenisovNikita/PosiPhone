@@ -77,6 +77,8 @@ int main(int argc, char *argv[]) {
                 server_module.send_to_all_clients_except_one(
                     PosiPhone::Message::create<PosiPhone::Message::AudioResult>(
                         msg.id(), msg.data(), msg.size()));
+                server_module.send_to_one_client(
+                    PosiPhone::Message::create<PosiPhone::Message::Empty>());
             } else if (msg.type() == PosiPhone::Message::Check_connection) {
                 server_module.send_to_one_client(std::move(msg));
             } else if (msg.type() == PosiPhone::Message::Request_new_info) {
