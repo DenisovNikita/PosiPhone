@@ -5,6 +5,7 @@
 #include <string>
 #include <utility>
 
+namespace PosiPhone {
 class User {
     std::int64_t id_;
     std::string name_;
@@ -19,5 +20,7 @@ public:
     [[maybe_unused]] [[nodiscard]] double x() const;
     [[maybe_unused]] [[nodiscard]] double y() const;
 };
+
+}  // namespace PosiPhone
 
 #endif  // GUI_USER_H

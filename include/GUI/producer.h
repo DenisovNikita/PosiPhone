@@ -7,6 +7,7 @@
 #include "message.h"
 #include "model_fwd.h"
 
+namespace PosiPhone {
 class Producer {
     folly::NotificationQueue<Message> *queue;
     folly::ScopedEventBaseThread th;
@@ -15,5 +16,7 @@ public:
     explicit Producer(Model *model);
     void send_message(Message &&msg);
 };
+
+}  // namespace PosiPhone
 
 #endif  // GUI_PRODUCER_H

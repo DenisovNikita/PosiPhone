@@ -1,6 +1,7 @@
 #include "mock.h"
 #include "model.h"
 
+namespace PosiPhone {
 Mock::Mock(Model *model)
     : model(model), t1("first circle"), t2("second circle") {
     t1.getEventBase()->runInEventBaseThread([this]() {
@@ -65,3 +66,5 @@ Mock::Mock(Model *model)
 void Mock::send_message(Message &&msg) {
     model->get_queue()->putMessage(std::move(msg));
 }
+
+}  // namespace PosiPhone

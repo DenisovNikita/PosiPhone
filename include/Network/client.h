@@ -6,6 +6,7 @@
 #include "message.h"
 #include "model_fwd.h"
 
+namespace PosiPhone {
 class Client : public folly::NotificationQueue<Message>::Consumer {
 private:
     Model *model;
@@ -28,3 +29,5 @@ public:
 
     ~Client() override;
 };
+
+}  // namespace PosiPhone

@@ -15,6 +15,7 @@
 #include "client_fwd.h"
 #include "message.h"
 
+namespace PosiPhone {
 class Server_network_module
     : public folly::NotificationQueue<Message>::Consumer {
 public:
@@ -55,3 +56,5 @@ public:
 
     ~Server_network_module() override;
 };
+
+}  // namespace PosiPhone

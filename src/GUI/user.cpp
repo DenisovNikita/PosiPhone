@@ -1,5 +1,6 @@
 #include "user.h"
 
+namespace PosiPhone {
 User::User() : id_(), x_(), y_() {
 }
 
@@ -26,3 +27,5 @@ std::string User::name() const {
 [[maybe_unused]] double User::y() const {
     return y_;
 }
+
+}  // namespace PosiPhone

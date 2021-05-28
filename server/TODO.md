@@ -5,3 +5,4 @@
 * Kick mixer and feed queue from server (server.cpp)
 * [Done] Add new message type for get smth new
 * [Done] Make struct with model_data in server
+* [Done] Add namespace PosiPhone

@@ -6,6 +6,7 @@
 #include "message.h"
 #include "model_fwd.h"
 
+namespace PosiPhone {
 class Mock {
     Model *model;
     folly::ScopedEventBaseThread t1, t2;
@@ -19,5 +20,7 @@ class Mock {
 public:
     explicit Mock(Model *model);
 };
+
+}  // namespace PosiPhone
 
 #endif  // GUI_MOCK_H

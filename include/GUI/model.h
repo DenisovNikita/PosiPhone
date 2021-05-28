@@ -22,6 +22,7 @@
 #include "user.h"
 #include "view.h"
 
+namespace PosiPhone {
 class Model final : public QWidget,
                     public folly::NotificationQueue<Message>::Consumer {
     Q_OBJECT
@@ -66,5 +67,7 @@ private slots:
     void close_view();
     void check_login(const QString &login);
 };
+
+}  // namespace PosiPhone
 
 #endif  // GUI_MODEL_H

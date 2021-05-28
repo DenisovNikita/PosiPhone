@@ -1,5 +1,6 @@
 #include "message.h"
 
+namespace PosiPhone {
 Message::Message() : type_(), id_(), name_(), x_(), y_(), data_() {
 }
 
@@ -76,3 +77,5 @@ Message Message::create_by_id_x_y_data(MessageType type,
                                        int size) {
     return Message(type, id, {}, x, y, data, size);
 }
+
+}  // namespace PosiPhone

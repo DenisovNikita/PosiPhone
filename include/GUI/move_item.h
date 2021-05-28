@@ -11,6 +11,7 @@
 #include "producer.h"
 #include "user.h"
 
+namespace PosiPhone {
 class MoveItem : public QGraphicsItem {
     Q_INTERFACES(QGraphicsItem)
 protected:
@@ -51,5 +52,7 @@ private:
                const QStyleOptionGraphicsItem *option,
                QWidget *widget) override;
 };
+
+}  // namespace PosiPhone
 
 #endif  // GUI_MOVE_ITEM_H

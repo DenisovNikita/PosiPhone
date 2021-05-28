@@ -14,6 +14,7 @@
 #include "message.h"
 #include "model_fwd.h"
 
+namespace PosiPhone {
 class Audio : public QPushButton {
     Q_OBJECT
     QIcon icons[2];
@@ -50,5 +51,7 @@ public:
     explicit Player(Model *model, QWidget *parent = nullptr);
     ~Player() override;
 };
+
+}  // namespace PosiPhone
 
 #endif  // GUI_BUTTON_H

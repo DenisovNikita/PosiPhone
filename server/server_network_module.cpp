@@ -2,6 +2,7 @@
 #include "client.h"
 #include "network_utils.h"
 
+namespace PosiPhone {
 Server_network_module::Server_network_module()
     : context(IO_THREADS_),
       socket(context, ZMQ_REP),
@@ -74,3 +75,5 @@ void Server_network_module::Clients_data::remove_client(std::int64_t id) {
     last_time_for_all.erase({last_time_by_id[id], id});
     last_time_by_id.erase(id);
 }
+
+}  // namespace PosiPhone
