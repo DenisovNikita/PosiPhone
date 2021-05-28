@@ -2,6 +2,7 @@
 #define GUI_MESSAGE_H
 
 #include <cstdint>
+#include <iosfwd>
 #include <string>
 #include <utility>
 #include <vector>
@@ -28,13 +29,14 @@ private:
     double x_;
     double y_;
     std::vector<char> data_;
+    long long create_time_;
 
     Message(MessageType type,
             std::int64_t id,
             std::string name,
             double x,
             double y,
-            char *data,
+            const char *data,
             int size);
     static Message create_by_id(MessageType type, std::int64_t id);
     static Message create_by_id_x_y(MessageType type,
@@ -48,13 +50,13 @@ private:
                                          double y);
     static Message create_by_id_data(MessageType type,
                                      std::int64_t id,
-                                     char *data,
+                                     const char *data,
                                      int size);
     static Message create_by_id_x_y_data(MessageType type,
                                          std::int64_t id,
                                          double x,
                                          double y,
-                                         char *data,
+                                         const char *data,
                                          int size);
 
 public:
@@ -70,6 +72,9 @@ public:
     [[nodiscard]] double y() const;
     [[nodiscard]] const char *data() const;
     [[nodiscard]] int size() const;
+    [[nodiscard]] long long create_time() const;
+    void print(const std::string &s);
+    friend std::ostream &operator<<(std::ostream &os, const Message &msg);
     template <MessageType type, typename... Args>
     static Message create(Args &&...args) {
         if constexpr (type == MessageType::Empty) {
@@ -98,6 +103,7 @@ public:
         (ar) & (x_);
         (ar) & (y_);
         (ar) & (data_);
+        (ar) & (create_time_);
     }
 };
 

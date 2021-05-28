@@ -25,8 +25,7 @@ void Server_network_module::messageAvailable(Message &&msg) noexcept {
     } else {
         // Other MessageType's are not suitable situation for message from
         // mixer to server
-        LOG(INFO) << "Received bad message type (to server from mixer) = "
-                  << to_string[msg.type()] << "\n";
+        msg.print("mixer -> server: bad message!");
         assert(false);
     }
 }

@@ -11,6 +11,6 @@
 * AudioSource -> queue of mixer
   
 Soon:
-* Init time in message constructors
+* [Done] Init time in message constructors
 * Make data a pointer
 * [Extra] Forbid copying message

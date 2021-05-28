@@ -12,7 +12,7 @@ int get_new_id() {
 const int TIMEOUT_MILLISECONDS = 2000;
 const int TIME_SLEEP = 100;
 
-int cur_time() {
+long long cur_time() {
     return std::chrono::duration_cast<std::chrono::milliseconds>(
                std::chrono::system_clock::now().time_since_epoch())
         .count();
@@ -36,8 +36,7 @@ int main(int argc, char *argv[]) {
             }
 
             if (msg.type() != PosiPhone::Message::Request_new_info) {
-                LOG(INFO) << "server received from client: "
-                          << PosiPhone::to_string[msg.type()] << "\n";
+                msg.print("client -> server");
             }
 
             if (msg.type() ==
@@ -75,7 +74,9 @@ int main(int argc, char *argv[]) {
                 server_module.send_to_all_clients_except_one(std::move(msg));
             } else if (msg.type() == PosiPhone::Message::AudioSource) {
                 // TODO: send msg to mixer
-                assert(false);
+                server_module.send_to_all_clients_except_one(
+                    PosiPhone::Message::create<PosiPhone::Message::AudioResult>(
+                        msg.id(), msg.data(), msg.size()));
             } else if (msg.type() == PosiPhone::Message::Check_connection) {
                 server_module.send_to_one_client(std::move(msg));
             } else if (msg.type() == PosiPhone::Message::Request_new_info) {
@@ -92,9 +93,7 @@ int main(int argc, char *argv[]) {
             } else {
                 // Other MessageType's are not suitable situation for message
                 // from client to server
-                LOG(INFO)
-                    << "Received bad message type (to server from client) = "
-                    << PosiPhone::to_string[msg.type()] << "\n";
+                msg.print("client -> sever: bad message!");
                 assert(false);
             }
         }

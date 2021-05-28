@@ -1,4 +1,17 @@
 #include "message.h"
+#include <iostream>
+#include <glog/logging.h>
+#include <chrono>
+#include "network_utils.h"
+
+namespace {
+long long cur_time() {
+    return std::chrono::duration_cast<std::chrono::milliseconds>(
+               std::chrono::system_clock::now().time_since_epoch())
+        .count();
+}
+
+}  // namespace
 
 namespace PosiPhone {
 Message::Message() : type_(), id_(), name_(), x_(), y_(), data_() {
@@ -9,9 +22,14 @@ Message::Message(MessageType type,
                  std::string name,
                  double x,
                  double y,
-                 char *data,
+                 const char *data,
                  int size)
-    : type_(type), id_(id), name_(std::move(name)), x_(x), y_(y) {
+    : type_(type),
+      id_(id),
+      name_(std::move(name)),
+      x_(x),
+      y_(y),
+      create_time_(cur_time()) {
     data_.assign(data, data + size);
 }
 
@@ -64,7 +82,7 @@ Message Message::create_by_id_name_x_y(MessageType type,
 
 Message Message::create_by_id_data(MessageType type,
                                    std::int64_t id,
-                                   char *data,
+                                   const char *data,
                                    int size) {
     return Message(type, id, {}, {}, {}, data, size);
 }
@@ -73,9 +91,33 @@ Message Message::create_by_id_x_y_data(MessageType type,
                                        std::int64_t id,
                                        double x,
                                        double y,
-                                       char *data,
+                                       const char *data,
                                        int size) {
     return Message(type, id, {}, x, y, data, size);
+}
+
+long long Message::create_time() const {
+    return create_time_;
+}
+
+std::ostream &operator<<(std::ostream &os, const Message &msg) {
+    os << "Got " << to_string[msg.type_] << " message\n";
+    os << "id = " << msg.id_ << "\n";
+    os << "x  = " << msg.x_ << "\n";
+    os << "y  = " << msg.y_ << "\n";
+    os << "name = " << msg.name_ << "\n";
+    os << "create_time  = " << msg.create_time_ << "\n";
+    return os;
+}
+
+void Message::print(const std::string &s) {
+    LOG(INFO) << s << ":\n";
+    LOG(INFO) << "Got " << to_string[type()] << " message\n";
+    LOG(INFO) << "id = " << id() << "\n";
+    LOG(INFO) << "x  = " << x() << "\n";
+    LOG(INFO) << "y  = " << y() << "\n";
+    LOG(INFO) << "name = " << name() << "\n";
+    LOG(INFO) << "create_time  = " << create_time() << "\n";
 }
 
 }  // namespace PosiPhone
