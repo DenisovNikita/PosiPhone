@@ -8,7 +8,7 @@ long long utils::utils::cur_time() {
 }
 
 double utils::utils::count_coef(double x1, double y1, double x2, double y2) {
-    return 1.0 / fmax(1.0, sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2)) / 100.0);
+    return 1.0 / fmax(1.0, sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2)) / 10.0);
 }
 
 namespace PosiPhone {
@@ -126,6 +126,7 @@ std::vector<AudioMessage> Mixer::mix() {
         }
         if (!m.empty() && m.begin()->time >= ticker - normal_delay * 2 &&
             m.begin()->time < ticker - normal_delay) {
+            LOG(INFO) << "ticker - time = " << ticker - m.begin()->time << "\n";
             input.push_back(*m.begin());
         }
     }
