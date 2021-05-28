@@ -76,7 +76,7 @@ int main(int argc, char *argv[]) {
                 // TODO: send msg to mixer
                 server_module.send_to_all_clients_except_one(
                     PosiPhone::Message::create<PosiPhone::Message::AudioResult>(
-                        msg.id(), msg.data(), msg.size()));
+                        msg.id(), msg.data()));
                 server_module.send_to_one_client(
                     PosiPhone::Message::create<PosiPhone::Message::Empty>());
             } else if (msg.type() == PosiPhone::Message::Check_connection) {

@@ -1,7 +1,8 @@
 #include "message.h"
-#include <iostream>
-#include "network_utils.h"
 #include <glog/logging.h>
+#include <iostream>
+#include <utility>
+#include "network_utils.h"
 
 namespace {
 long long cur_time() {
@@ -20,15 +21,14 @@ Message::Message(MessageType type,
                  std::string name,
                  double x,
                  double y,
-                 const char *data,
-                 int size)
+                 std::shared_ptr<std::vector<char>> data)
     : type_(type),
       id_(id),
       name_(std::move(name)),
       x_(x),
       y_(y),
+      data_(std::move(data)),
       time_(cur_time()) {
-    data_.assign(data, data + size);
 }
 
 Message::MessageType Message::type() const {
@@ -51,12 +51,8 @@ double Message::y() const {
     return y_;
 }
 
-const char *Message::data() const {
-    return data_.data();
-}
-
-int Message::size() const {
-    return static_cast<int>(data_.size());
+std::shared_ptr<std::vector<char>> Message::data() const {
+    return data_;
 }
 
 long long Message::time() const {
@@ -64,14 +60,14 @@ long long Message::time() const {
 }
 
 Message Message::create_by_id(MessageType type, std::int64_t id) {
-    return Message(type, id, {}, {}, {}, {}, {});
+    return Message(type, id, {}, {}, {}, {});
 }
 
 Message Message::create_by_id_x_y(MessageType type,
                                   std::int64_t id,
                                   double x,
                                   double y) {
-    return Message(type, id, {}, x, y, {}, {});
+    return Message(type, id, {}, x, y, {});
 }
 
 Message Message::create_by_id_name_x_y(MessageType type,
@@ -79,23 +75,22 @@ Message Message::create_by_id_name_x_y(MessageType type,
                                        std::string name,
                                        double x,
                                        double y) {
-    return Message(type, id, std::move(name), x, y, {}, {});
+    return Message(type, id, std::move(name), x, y, {});
 }
 
 Message Message::create_by_id_data(MessageType type,
                                    std::int64_t id,
-                                   const char *data,
-                                   int size) {
-    return Message(type, id, {}, {}, {}, data, size);
+                                   std::shared_ptr<std::vector<char>> data) {
+    return Message(type, id, {}, {}, {}, std::move(data));
 }
 
-Message Message::create_by_id_x_y_data(MessageType type,
-                                       std::int64_t id,
-                                       double x,
-                                       double y,
-                                       const char *data,
-                                       int size) {
-    return Message(type, id, {}, x, y, data, size);
+Message Message::create_by_id_x_y_data(
+    MessageType type,
+    std::int64_t id,
+    double x,
+    double y,
+    std::shared_ptr<std::vector<char>> data) {
+    return Message(type, id, {}, x, y, std::move(data));
 }
 
 std::ostream &operator<<(std::ostream &os, const Message &msg) {

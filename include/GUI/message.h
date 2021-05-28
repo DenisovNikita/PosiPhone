@@ -4,6 +4,7 @@
 #include <chrono>
 #include <cstdint>
 #include <iosfwd>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -29,7 +30,7 @@ private:
     std::string name_;
     double x_;
     double y_;
-    std::vector<char> data_;
+    std::shared_ptr<std::vector<char>> data_;
     long long time_;
 
     Message(MessageType type,
@@ -37,8 +38,7 @@ private:
             std::string name,
             double x,
             double y,
-            const char *data,
-            int size);
+            std::shared_ptr<std::vector<char>> data);
     static Message create_by_id(MessageType type, std::int64_t id);
     static Message create_by_id_x_y(MessageType type,
                                     std::int64_t id,
@@ -51,14 +51,13 @@ private:
                                          double y);
     static Message create_by_id_data(MessageType type,
                                      std::int64_t id,
-                                     const char *data,
-                                     int size);
-    static Message create_by_id_x_y_data(MessageType type,
-                                         std::int64_t id,
-                                         double x,
-                                         double y,
-                                         const char *data,
-                                         int size);
+                                     std::shared_ptr<std::vector<char>> data);
+    static Message create_by_id_x_y_data(
+        MessageType type,
+        std::int64_t id,
+        double x,
+        double y,
+        std::shared_ptr<std::vector<char>> data);
 
 public:
     Message();
@@ -72,8 +71,7 @@ public:
     [[nodiscard]] std::string name() const;
     [[nodiscard]] double x() const;
     [[nodiscard]] double y() const;
-    [[nodiscard]] const char *data() const;
-    [[nodiscard]] int size() const;
+    [[nodiscard]] std::shared_ptr<std::vector<char>> data() const;
     [[nodiscard]] long long time() const;
     friend std::ostream &operator<<(std::ostream &os, const Message &msg);
     void print(const std::string &s);

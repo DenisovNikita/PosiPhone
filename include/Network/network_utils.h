@@ -5,6 +5,7 @@
 #include <boost/serialization/serialization.hpp>
 #include <boost/serialization/string.hpp>
 #include <boost/serialization/vector.hpp>
+#include <boost/serialization/shared_ptr.hpp>
 #include <zmq.hpp>
 #include "message.h"
 

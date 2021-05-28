@@ -52,8 +52,11 @@ Recorder::Recorder(Model *model, QWidget *parent)
     recorder.start(&buffer);
     runner.add("Recorder", [this, model]() {
         if (isChecked()) {
+            std::vector<char> tmp;
+            tmp.assign(buffer.buffer().data(),
+                       buffer.buffer().data() + buffer.buffer().size());
             model->send_message(Message::create<Message::AudioSource>(
-                model->get_id(), buffer.buffer().data(), buffer.buffer().size()));
+                model->get_id(), std::make_shared<std::vector<char>>(tmp)));
         }
         buffer.buffer().clear();
         buffer.reset();
@@ -76,8 +79,8 @@ Player::Player(Model *model, QWidget *parent)
         buffer.reset();
         Message msg;
         model->read_audio_message(msg);
-        if (isChecked()) {
-            buffer.buffer().append(msg.data(), msg.size());
+        if (isChecked() && msg.data()) {
+            buffer.buffer().append(msg.data()->data(), msg.data()->size());
         }
         return std::chrono::milliseconds(50);
     });
