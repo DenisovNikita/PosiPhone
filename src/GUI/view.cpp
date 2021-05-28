@@ -25,10 +25,22 @@ View::View(Model *model, QWidget *parent)
 
 void View::closeEvent(QCloseEvent *event) {
     is_shown_ = false;
+    if (recorder->isChecked()) {
+        recorder->click();
+    }
+    if (player->isChecked()) {
+        player->click();
+    }
 }
 
 void View::showEvent(QShowEvent *event) {
     is_shown_ = true;
+    if (!recorder->isChecked()) {
+        recorder->click();
+    }
+    if (!player->isChecked()) {
+        player->click();
+    }
 }
 
 bool View::is_shown() const {

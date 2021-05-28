@@ -8,12 +8,12 @@ QIcon init_icon(const std::string &name, bool b) {
 }
 QAudioFormat setWavFormat(const QAudioDeviceInfo &dev_info) {
     static QAudioFormat format;
-    format.setSampleRate(8000);
+    format.setSampleRate(44100);
     format.setChannelCount(1);
-    format.setSampleSize(8);
+    format.setSampleSize(32);
     format.setCodec("audio/pcm");
     format.setByteOrder(QAudioFormat::LittleEndian);
-    format.setSampleType(QAudioFormat::UnSignedInt);
+    format.setSampleType(QAudioFormat::Float);
 
     if (dev_info.isFormatSupported(format)) {
         return format;
@@ -26,7 +26,7 @@ QAudioFormat setWavFormat(const QAudioDeviceInfo &dev_info) {
 Audio::Audio(const std::string &name, Model *model, QWidget *parent)
     : QPushButton(parent), model(model) {
     setCheckable(true);
-    setChecked(true);
+    setChecked(false);
     for (int i = 0; i < 2; ++i) {
         icons[i] = init_icon(name, i);
     }
