@@ -22,7 +22,8 @@
 #include <string>
 #include <utility>
 #include <vector>
-#include "include/GUI/message.h"
+#include "../../AudioFile/AudioFile.h"
+#include "message.h"
 
 namespace utils {
 
@@ -43,13 +44,12 @@ AudioFile<float> join(const std::vector<AudioFile<float>> &separate);
 struct AudioMessage {
     const double x;
     const double y;
-    const int id;
+    const std::int64_t id;
     const long long time;
     AudioFile<float> data;
     AudioMessage(double x_,
                  double y_,
-                 int id_,
-                 int room_id,
+                 std::int64_t id_,
                  long long time_,
                  AudioFile<float> data_)
         : x(x_), y(y_), id(id_), time(time_), data(std::move(data_)){};
@@ -69,32 +69,17 @@ class Mixer final : public folly::NotificationQueue<AudioMessage>::Consumer {
     AudioFile<float> sample;
     folly::NotificationQueue<AudioMessage> queue;
     long long normal_delay = 50, number_id = 10;
-    std::vector<Message> request_answer = {};
+    std::vector<AudioMessage> request_answer = {};
     folly::ThreadedRepeatingFunctionRunner runner;
     folly::NotificationQueue<Message> *result;
 
 public:
-    Mixer(folly::NotificationQueue<Message> *result_) : result(result_) {
-        std::ifstream config("include/Mixer/config.txt");
-        config >> normal_delay >> number_id;
-        messages_sorted.resize(10);
-        sample.samples.resize(1);
-        sample.samples[0].resize(2, 0);
-
-        runner.add("Mixer", [this]() {
-            request_answer = mix();
-            return std::chrono::milliseconds(50);
-        });
-
-        auto *eventBase = th.getEventBase();
-        eventBase->runInEventBaseThread(
-            [eventBase, this]() { startConsuming(eventBase, &queue); });
-    }
+    Mixer(folly::NotificationQueue<Message> *result_);
     void messageAvailable(AudioMessage &&msg) noexcept override;
     void putMessage(Message &&msg);
     void add_id(int new_ids);
     void send_messages();
-    std::vector<Message> mix();
+    std::vector<AudioMessage> mix();
     ~Mixer() override {
         runner.stop();
         th.getEventBase()->runInEventBaseThread([this]() { stopConsuming(); });

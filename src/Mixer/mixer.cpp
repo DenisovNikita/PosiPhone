@@ -1,4 +1,4 @@
-#include "include/Mixer/mixer.h"
+#include "mixer.h"
 
 long long utils::utils::cur_time() {
     return std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -76,7 +76,7 @@ void Mixer::messageAvailable(AudioMessage &&msg) noexcept {
 
 void Mixer::putMessage(Message &&msg) {
     std::vector<char> vec(msg.data(), msg.data() + msg.size());
-    float *ptr = reinterpret_cast<float *>(vec.data());
+    auto *ptr = reinterpret_cast<float *>(vec.data());
     int size = vec.size() / sizeof(float);
     std::vector<std::vector<float>> buf(1, std::vector<float>(size));
     for (int i = 0; i < size; ++i) {
@@ -84,8 +84,7 @@ void Mixer::putMessage(Message &&msg) {
     }
     AudioFile<float> af;
     af.setAudioBuffer(buf);
-    queue.putMessage(
-        AudioMessage{msg.x(), msg.y(), msg.id(), msg.create_time(), af});
+    queue.putMessage(AudioMessage{msg.x(), msg.y(), msg.id(), msg.time(), af});
 }
 
 void Mixer::add_id(int new_ids) {
@@ -101,17 +100,18 @@ void Mixer::send_messages() {
         std::vector<char> vec;
         for (int i = 0; i < af.data.getNumSamplesPerChannel(); ++i) {
             for (int j = 0; j < af.data.getNumChannels(); ++j) {
-                char *ptr = reinterpret_cast<char *>(af.data.samples[j][i]);
+                const char *ptr =
+                    reinterpret_cast<const char *>(&af.data.samples[j][i]);
                 int size = sizeof(float);
                 vec.insert(vec.end(), ptr, ptr + size);
             }
         }
-        *result->putMessage(Message::create<Message::AudioResult>(
+        result->putMessage(Message::create<Message::AudioResult>(
             af.id, vec.data(), vec.size()));
     }
 }
 
-std::vector<Message> Mixer::mix() {
+std::vector<AudioMessage> Mixer::mix() {
     long long ticker = utils::utils().cur_time();
     std::vector<AudioMessage> input;
     for (auto &m : messages_sorted) {
@@ -124,6 +124,23 @@ std::vector<Message> Mixer::mix() {
         }
     }
     return try_to_mix(input);
+}
+
+Mixer::Mixer(folly::NotificationQueue<Message> *result_) : result(result_) {
+    std::ifstream config("include/Mixer/config.txt");
+    config >> normal_delay >> number_id;
+    messages_sorted.resize(10);
+    sample.samples.resize(1);
+    sample.samples[0].resize(2, 0);
+
+    runner.add("Mixer", [this]() {
+        request_answer = mix();
+        return std::chrono::milliseconds(50);
+    });
+
+    auto *eventBase = th.getEventBase();
+    eventBase->runInEventBaseThread(
+        [eventBase, this]() { startConsuming(eventBase, &queue); });
 }
 
 }  // namespace PosiPhone
