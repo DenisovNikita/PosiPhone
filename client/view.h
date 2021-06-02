@@ -4,11 +4,10 @@
 #include <glog/logging.h>
 #include <QGraphicsScene>
 #include <QMainWindow>
-#include <QSpacerItem>
 #include <cstdint>
 #include <memory>
 #include <unordered_map>
-#include "audio.h"
+#include "audio_button.h"
 #include "model_fwd.h"
 #include "move_item.h"
 #include "ui_view.h"
@@ -20,9 +19,6 @@ class View : public QMainWindow {
     Model *model;
     bool is_shown_;
     Ui::View ui;
-    Recorder *recorder;
-    Player *player;
-    QSpacerItem *horizontalSpacer;
     QGraphicsScene scene;
     std::unordered_map<std::int64_t, std::unique_ptr<MoveItem>> items;
     void closeEvent(QCloseEvent *event) override;
@@ -33,7 +29,7 @@ public:
     bool is_shown() const;
 
 private slots:
-    void add_item(const User &user, std::int64_t type);
+    void add_item(const PosiPhone::User &user, std::int64_t type);
     void remove_item(std::int64_t id);
     void set_pos(std::int64_t id, double x, double y);
 };

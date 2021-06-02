@@ -6,18 +6,8 @@ View::View(Model *model, QWidget *parent)
       model(model),
       is_shown_(false),
       ui(),
-      recorder(new Recorder(model, ui.centralwidget)),
-      player(new Player(model, ui.centralwidget)),
-      horizontalSpacer(new QSpacerItem(40,
-                                       20,
-                                       QSizePolicy::Expanding,
-                                       QSizePolicy::Minimum)),
       scene(this) {
     ui.setupUi(this);
-    ui.horizontalLayout->addWidget(recorder);
-    ui.horizontalLayout->addWidget(player);
-    ui.horizontalLayout->addItem(horizontalSpacer);
-
     scene.setSceneRect(-300, -300, 600, 600);
     scene.setItemIndexMethod(QGraphicsScene::NoIndex);
     ui.view->setScene(&scene);
@@ -26,21 +16,21 @@ View::View(Model *model, QWidget *parent)
 
 void View::closeEvent(QCloseEvent *event) {
     is_shown_ = false;
-    if (recorder->isChecked()) {
-        recorder->click();
+    if (ui.recorder->isChecked()) {
+        ui.recorder->click();
     }
-    if (player->isChecked()) {
-        player->click();
+    if (ui.player->isChecked()) {
+        ui.player->click();
     }
 }
 
 void View::showEvent(QShowEvent *event) {
     is_shown_ = true;
-    if (!recorder->isChecked()) {
-        recorder->click();
+    if (!ui.recorder->isChecked()) {
+        ui.recorder->click();
     }
-    if (!player->isChecked()) {
-        player->click();
+    if (!ui.player->isChecked()) {
+        ui.player->click();
     }
 }
 

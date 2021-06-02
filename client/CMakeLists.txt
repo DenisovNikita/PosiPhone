@@ -14,6 +14,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Ofast")
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Werror")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DQT_NO_FOREACH")
 
+add_compile_options(-static)
+
 find_package(folly REQUIRED)
 find_package(gflags REQUIRED)
 find_package(Threads REQUIRED)
@@ -26,6 +28,8 @@ find_library(ZMQ_LIBRARY NAMES zmq)
 add_executable(${PROJECT_NAME}
     audio.cpp
     audio.h
+    audio_button.cpp
+    audio_button.h
     client.cpp
     client.h
     login_widget.cpp
