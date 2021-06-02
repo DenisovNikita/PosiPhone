@@ -1,5 +1,5 @@
-#ifndef GUI_VIEW_H
-#define GUI_VIEW_H
+#ifndef POSIPHONE_VIEW_H
+#define POSIPHONE_VIEW_H
 
 #include <glog/logging.h>
 #include <QGraphicsScene>
@@ -36,4 +36,4 @@ private slots:
 
 }  // namespace PosiPhone
 
-#endif  // GUI_VIEW_H
+#endif  // POSIPHONE_VIEW_H

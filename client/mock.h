@@ -1,5 +1,5 @@
-#ifndef GUI_MOCK_H
-#define GUI_MOCK_H
+#ifndef POSIPHONE_MOCK_H
+#define POSIPHONE_MOCK_H
 
 #include <folly/io/async/ScopedEventBaseThread.h>
 #include <memory>
@@ -23,4 +23,4 @@ public:
 
 }  // namespace PosiPhone
 
-#endif  // GUI_MOCK_H
+#endif  // POSIPHONE_MOCK_H

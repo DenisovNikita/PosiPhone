@@ -1,8 +1,5 @@
 #include "message.h"
-#include <glog/logging.h>
 #include <iostream>
-#include <utility>
-#include "network_utils.h"
 
 namespace {
 long long cur_time() {
@@ -94,23 +91,27 @@ Message Message::create_by_id_x_y_data(
 }
 
 std::ostream &operator<<(std::ostream &os, const Message &msg) {
+    static std::unordered_map<int, std::string> to_string;
+    if (to_string.empty()) {
+#define ADD_ENUM_ELEMENT(elem) (to_string[(elem)] = #elem)
+        ADD_ENUM_ELEMENT(Message::Empty);
+        ADD_ENUM_ELEMENT(Message::Connect);
+        ADD_ENUM_ELEMENT(Message::Create);
+        ADD_ENUM_ELEMENT(Message::Move);
+        ADD_ENUM_ELEMENT(Message::AudioSource);
+        ADD_ENUM_ELEMENT(Message::AudioResult);
+        ADD_ENUM_ELEMENT(Message::Destroy);
+        ADD_ENUM_ELEMENT(Message::Check_connection);
+        ADD_ENUM_ELEMENT(Message::Request_new_info);
+#undef ADD_ENUM_ELEMENT
+    }
     os << "Got " << to_string[msg.type_] << " message\n";
-    os << "id = " << msg.id_ << "\n";
-    os << "x  = " << msg.x_ << "\n";
-    os << "y  = " << msg.y_ << "\n";
-    os << "name = " << msg.name_ << "\n";
-    os << "create_time  = " << msg.time_ << "\n";
+    os << "id   = " << msg.id_ << "\n";
+    os << "x    = " << msg.x_ << "\n";
+    os << "y    = " << msg.y_ << "\n";
+    os << "name = \"" << msg.name_ << "\"\n";
+    os << "time = " << msg.time_ << "\n";
     return os;
-}
-
-void Message::print(const std::string &s) {
-    LOG(INFO) << s << ":\n";
-    LOG(INFO) << "Got " << to_string[type()] << " message\n";
-    LOG(INFO) << "id = " << id() << "\n";
-    LOG(INFO) << "x  = " << x() << "\n";
-    LOG(INFO) << "y  = " << y() << "\n";
-    LOG(INFO) << "name = " << name() << "\n";
-    LOG(INFO) << "create_time  = " << time() << "\n";
 }
 
 }  // namespace PosiPhone

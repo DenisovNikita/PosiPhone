@@ -1,11 +1,13 @@
-#ifndef GUI_MESSAGE_H
-#define GUI_MESSAGE_H
+#ifndef POSIPHONE_MESSAGE_H
+#define POSIPHONE_MESSAGE_H
 
+#include <glog/logging.h>
 #include <chrono>
 #include <cstdint>
 #include <iosfwd>
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -74,7 +76,6 @@ public:
     [[nodiscard]] std::shared_ptr<std::vector<char>> data() const;
     [[nodiscard]] long long time() const;
     friend std::ostream &operator<<(std::ostream &os, const Message &msg);
-    void print(const std::string &s);
     template <MessageType type, typename... Args>
     static Message create(Args &&...args) {
         if constexpr (type == MessageType::Empty) {
@@ -86,8 +87,8 @@ public:
             return create_by_id_name_x_y(type, std::forward<Args>(args)...);
         } else if constexpr (type == MessageType::AudioResult) {
             return create_by_id_data(type, std::forward<Args>(args)...);
-         } else if constexpr (type == Message::AudioSource) {
-             return create_by_id_x_y_data(type, std::forward<Args>(args)...);
+        } else if constexpr (type == Message::AudioSource) {
+            return create_by_id_x_y_data(type, std::forward<Args>(args)...);
         } else if constexpr (type == MessageType::Destroy ||
                              type == MessageType::Check_connection ||
                              type == MessageType::Request_new_info) {
@@ -109,4 +110,4 @@ public:
 
 }  // namespace PosiPhone
 
-#endif  // GUI_MESSAGE_H
+#endif  // POSIPHONE_MESSAGE_H
