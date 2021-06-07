@@ -1,55 +1,80 @@
-#ifndef GUI_BUTTON_H
-#define GUI_BUTTON_H
+#ifndef POSIPHONE_AUDIO_H
+#define POSIPHONE_AUDIO_H
 
-#include <folly/experimental/ThreadedRepeatingFunctionRunner.h>
 #include <QAudioDeviceInfo>
 #include <QAudioFormat>
 #include <QAudioInput>
 #include <QAudioOutput>
-#include <QBuffer>
-#include <QIcon>
-#include <QPushButton>
+#include <QDebug>
+#include <QThread>
 #include <stdexcept>
-#include <string>
+#include "audio_buffer.h"
 #include "message.h"
 #include "model_fwd.h"
 
 namespace PosiPhone {
-class Audio : public QPushButton {
+class BaseAudio : public QObject {
     Q_OBJECT
-    QIcon icons[2];
-    void setIcon();
-
-private slots:
-    void switch_button();
-
 protected:
+    bool proceed_audio;
     Model *model;
-    Audio(const std::string &name, Model *model, QWidget *parent = nullptr);
+    AudioBuffer buffer;
+    explicit BaseAudio(Model *model, QObject *parent = nullptr);
+
+public slots:
+    void button_clicked();
 };
 
-class Recorder final : public Audio {
+class Recorder : public BaseAudio {
     Q_OBJECT
     QAudioInput recorder;
-    QBuffer buffer;
-    folly::ThreadedRepeatingFunctionRunner runner;
+
+    Q_SLOT void send_audio();
 
 public:
-    explicit Recorder(Model *model, QWidget *parent = nullptr);
-    ~Recorder() override;
+    explicit Recorder(Model *model, QObject *parent = nullptr);
+    void start();
+    void stop();
 };
 
-class Player final : public Audio {
+class Player : public BaseAudio {
     Q_OBJECT
     QAudioOutput player;
-    QBuffer buffer;
-    folly::ThreadedRepeatingFunctionRunner runner;
+
+    Q_SLOT void receive_audio();
 
 public:
-    explicit Player(Model *model, QWidget *parent = nullptr);
-    ~Player() override;
+    explicit Player(Model *model, QObject *parent = nullptr);
+    void start();
+    void stop();
+};
+
+class RecorderRunner : public QObject {
+    Q_OBJECT
+    Recorder *recorder;
+    QThread *thread;
+    Q_SIGNAL void finished();
+
+public:
+    explicit RecorderRunner(Model *model, QObject *parent = nullptr);
+    void start();
+    [[nodiscard]] BaseAudio *get() const;
+    ~RecorderRunner() noexcept override;
+};
+
+class PlayerRunner : public QObject {
+    Q_OBJECT
+    QThread *thread;
+    Player *player;
+    Q_SIGNAL void finished();
+
+public:
+    explicit PlayerRunner(Model *model, QObject *parent = nullptr);
+    void start();
+    [[nodiscard]] BaseAudio *get() const;
+    ~PlayerRunner() noexcept override;
 };
 
 }  // namespace PosiPhone
 
-#endif  // GUI_BUTTON_H
+#endif  // POSIPHONE_AUDIO_H

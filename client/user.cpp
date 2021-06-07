@@ -8,6 +8,10 @@ User::User(std::int64_t id, std::string name, double x, double y)
     : id_(id), name_(std::move(name)), x_(x), y_(y) {
 }
 
+void User::set_id(std::int64_t id) {
+    id_ = id;
+}
+
 void User::set_pos(double x, double y) {
     x_ = x, x_ = y;
 }

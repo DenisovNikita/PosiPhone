@@ -14,6 +14,7 @@ class User {
 public:
     User();
     User(std::int64_t id, std::string name, double x, double y);
+    void set_id(std::int64_t id);
     void set_pos(double x, double y);
     [[nodiscard]] std::int64_t id() const;
     [[nodiscard]] std::string name() const;
