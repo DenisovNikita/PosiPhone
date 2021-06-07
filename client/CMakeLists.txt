@@ -28,6 +28,8 @@ find_library(ZMQ_LIBRARY NAMES zmq)
 add_executable(${PROJECT_NAME}
     audio.cpp
     audio.h
+    audio_buffer.cpp
+    audio_buffer.h
     audio_button.cpp
     audio_button.h
     client.cpp
