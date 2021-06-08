@@ -44,9 +44,9 @@ public:
     void messageAvailable(Message &&msg) noexcept override;
     std::int64_t get_id() const;
     void send_message(Message &&msg);
-    void send_my_audio(const std::shared_ptr<std::vector<char>> &ptr);
     void send_audio_message(Message &&msg);
-    std::shared_ptr<std::vector<char>> receive_audio_message();
+    void send_audio_data(const std::shared_ptr<std::vector<char>> &ptr);
+    std::shared_ptr<std::vector<char>> receive_audio_data();
     ~Model() override;
 
 signals:
@@ -63,7 +63,7 @@ private slots:
     void check_login(const QString &login);
 
 private:
-    void connect_to_view(View *view);
+    void connect_to_view(View *view) const;
     void connect_to_login_widget(LoginWidget *l) const;
     void login_checked(Message &&msg);
     void add_item(Message &&msg);

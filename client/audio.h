@@ -28,7 +28,6 @@ public slots:
 class Recorder : public BaseAudio {
     Q_OBJECT
     QAudioInput recorder;
-
     Q_SLOT void send_audio();
 
 public:
@@ -40,7 +39,6 @@ public:
 class Player : public BaseAudio {
     Q_OBJECT
     QAudioOutput player;
-
     Q_SLOT void receive_audio();
 
 public:

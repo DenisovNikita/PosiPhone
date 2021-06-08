@@ -30,7 +30,8 @@ Model::Model()
 
     recorder_runner.start();
     player_runner.start();
-    login_widget.show();
+//    login_widget.show();
+    view.show();
 }
 
 void Model::messageAvailable(Message &&msg) noexcept {
@@ -66,11 +67,6 @@ void Model::send_message(Message &&msg) {
     }
 }
 
-void Model::send_my_audio(const std::shared_ptr<std::vector<char>> &ptr) {
-    send_audio_message(Message::create<Message::AudioSource>(
-        this_user.id(), this_user.x(), this_user.y(), ptr));
-}
-
 void Model::send_audio_message(Message &&msg) {
     if (msg.data() == nullptr) {
         return;
@@ -80,13 +76,18 @@ void Model::send_audio_message(Message &&msg) {
     }
 }
 
-std::shared_ptr<std::vector<char>> Model::receive_audio_message() {
+void Model::send_audio_data(const std::shared_ptr<std::vector<char>> &ptr) {
+    send_audio_message(Message::create<Message::AudioSource>(
+        this_user.id(), this_user.x(), this_user.y(), ptr));
+}
+
+std::shared_ptr<std::vector<char>> Model::receive_audio_data() {
     Message msg;
     audio_queue.read(msg);
     return msg.data();
 }
 
-void Model::connect_to_view(View *v) {
+void Model::connect_to_view(View *v) const {
     connect(v->ui.recorder, &RecorderButton::clicked, recorder_runner.get(),
             &Recorder::button_clicked);
     connect(v->ui.player, &PlayerButton::clicked, player_runner.get(),

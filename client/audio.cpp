@@ -34,15 +34,13 @@ void BaseAudio::button_clicked() {
 Recorder::Recorder(Model *model, QObject *parent)
     : BaseAudio(model, parent),
       recorder(setWavFormat(QAudioDeviceInfo::defaultInputDevice())) {
-    //    connect(model, &Model::recorder_button_clicked, this,
-    //            [this]() { proceed_audio ^= true; });
     connect(&recorder, &QAudioInput::notify, this, &Recorder::send_audio);
     recorder.setNotifyInterval(50);
 }
 
 void Recorder::send_audio() {
     if (proceed_audio) {
-        model->send_my_audio(buffer.read_and_clear());
+        model->send_audio_data(buffer.read_and_clear());
     } else {
         buffer.clear();
     }
@@ -59,8 +57,6 @@ void Recorder::stop() {
 Player::Player(Model *model, QObject *parent)
     : BaseAudio(model, parent),
       player(setWavFormat(QAudioDeviceInfo::defaultOutputDevice())) {
-//    connect(model, &Model::player_button_clicked, this,
-//            [this]() { proceed_audio ^= true; });
     connect(&player, &QAudioOutput::notify, this, &Player::receive_audio);
     player.setNotifyInterval(50);
 }
@@ -74,7 +70,7 @@ void Player::stop() {
 }
 
 void Player::receive_audio() {
-    auto data = model->receive_audio_message();
+    auto data = model->receive_audio_data();
     if (proceed_audio) {
         buffer.clear_and_write(data);
     } else {
