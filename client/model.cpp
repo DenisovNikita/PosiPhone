@@ -47,7 +47,7 @@ void Model::messageAvailable(Message &&msg) noexcept {
     } else if (msg.type() == Message::Move) {
         set_pos(std::move(msg));
     } else if (msg.type() == Message::AudioSource) {
-        client.get_queue()->putMessage(std::move(msg));
+        client.send_message(std::move(msg));
     } else if (msg.type() == Message::Destroy) {
         remove_item(std::move(msg));
     } else {
@@ -61,7 +61,7 @@ std::int64_t Model::get_id() const {
 
 void Model::send_message(Message &&msg) {
     try {
-        queue.putMessage(std::move(msg));
+        queue.tryPutMessage(std::move(msg));
     } catch (const std::exception &e) {
         LOG(ERROR) << e.what() << '\n';
     }
@@ -103,7 +103,7 @@ void Model::connect_to_login_widget(LoginWidget *l) const {
 }
 
 void Model::check_login(const QString &login) {
-    client.get_queue()->putMessage(Message::create<Message::Connect>(
+    client.send_message(Message::create<Message::Connect>(
         this_user.id(), login.toStdString(), 0, 0));
 }
 
@@ -133,7 +133,7 @@ void Model::set_pos(Message &&msg) {
         user->second.set_pos(msg.x(), msg.y());
         emit set_pos_signal(msg.id(), msg.x(), msg.y());
         if (msg.id() == this_user.id()) {
-            client.get_queue()->putMessage(std::move(msg));
+            client.send_message(std::move(msg));
         }
     } else {
         LOG(WARNING) << "Trying to move unknown circle\n";
@@ -146,7 +146,7 @@ void Model::remove_item(Message &&msg) {
         users.erase(user);
         emit remove_item_signal(msg.id());
         if (msg.id() == this_user.id()) {
-            client.get_queue()->putMessage(std::move(msg));
+            client.send_message(std::move(msg));
         }
     } else {
         LOG(WARNING) << "Trying to remove unknown circle\n";

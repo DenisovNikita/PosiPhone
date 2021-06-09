@@ -51,7 +51,6 @@ add_executable(${PROJECT_NAME}
     view.ui
 
     ../common/client_fwd.h
-    ../common/common_client.cpp
     ../common/common_server.cpp
     ../common/message.cpp
     ../common/message.h

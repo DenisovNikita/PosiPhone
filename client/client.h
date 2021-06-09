@@ -1,4 +1,5 @@
-#pragma once
+#ifndef POSIPHONE_CLIENT_H
+#define POSIPHONE_CLIENT_H
 
 #include <folly/io/async/NotificationQueue.h>
 #include <folly/io/async/ScopedEventBaseThread.h>
@@ -25,9 +26,10 @@ public:
     bool is_ok_connection();
     Message send_to_server(Message &&msg);
 
-    folly::NotificationQueue<Message> *get_queue();
-
+    void send_message(Message &&msg);
     ~Client() override;
 };
 
 }  // namespace PosiPhone
+
+#endif  // POSIPHONE_CLIENT_H
