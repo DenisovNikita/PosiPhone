@@ -30,8 +30,7 @@ Model::Model()
 
     recorder_runner.start();
     player_runner.start();
-//    login_widget.show();
-    view.show();
+    login_widget.show();
 }
 
 void Model::messageAvailable(Message &&msg) noexcept {
@@ -77,7 +76,7 @@ void Model::send_audio_message(Message &&msg) {
 }
 
 void Model::send_audio_data(const std::shared_ptr<std::vector<char>> &ptr) {
-    send_audio_message(Message::create<Message::AudioSource>(
+    send_message(Message::create<Message::AudioSource>(
         this_user.id(), this_user.x(), this_user.y(), ptr));
 }
 
