@@ -4,7 +4,8 @@
 #include "network_utils.h"
 
 namespace {
-const auto server_name = "tcp://188.119.67.234:" + std::to_string(PosiPhone::port);
+const auto server_name =
+    "tcp://188.119.67.234:" + std::to_string(PosiPhone::port);
 
 int set_connection(zmq::socket_t &socket) {
     socket.connect(server_name);
@@ -44,8 +45,10 @@ Client::Client(Model *m)
             send(local_socket, std::move(pullRequest));
             auto result = receive(local_socket);
             if (result.type() != Message::Empty) {
-                LOG(INFO) << "client received from another_client: "
-                          << to_string[result.type()] << std::endl;
+                //                LOG(INFO) << "client received from
+                //                another_client: "
+                //                          << to_string[result.type()] <<
+                //                          std::endl;
             }
             if (result.type() == Message::AudioResult) {
                 model->send_audio_message(std::move(result));
@@ -78,10 +81,8 @@ int Client::connect_to_server() {
 
 void Client::messageAvailable(Message &&msg) noexcept {
     std::unique_lock l(m);
-    if (msg.type() == Message::Connect ||
-        msg.type() == Message::AudioSource ||
-        msg.type() == Message::Move ||
-        msg.type() == Message::Destroy) {
+    if (msg.type() == Message::Connect || msg.type() == Message::AudioSource ||
+        msg.type() == Message::Move || msg.type() == Message::Destroy) {
         auto res = send_to_server(std::move(msg));
         if (res.type() != Message::Empty) {
             LOG(INFO) << "client received from model: " << to_string[res.type()]
@@ -101,8 +102,8 @@ bool Client::is_ok_connection() {
     if (model->get_id() == 0) {
         return true;
     }
-    Message request = Message::create<Message::Check_connection>(
-        model->get_id());
+    Message request =
+        Message::create<Message::Check_connection>(model->get_id());
     Message response = send_and_receive(socket, std::move(request));
     return response.type() == Message::Check_connection;
 }

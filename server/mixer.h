@@ -47,6 +47,7 @@ struct AudioMessage {
     const std::int64_t id;
     const long long time;
     AudioFile<float> data;
+    ClientServerTimeStamp stamp_;
     AudioMessage(double x_,
                  double y_,
                  std::int64_t id_,

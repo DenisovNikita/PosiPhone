@@ -12,6 +12,32 @@
 #include <vector>
 
 namespace PosiPhone {
+
+long long cur_time();
+
+struct ClientServerTimeStamp {
+    long long client_time_received;
+    long long client_time_sent;
+    long long server_time_received_from_client;
+    long long server_time_sent_to_client;
+    long long server_time_received_from_mixer;
+    long long server_time_sent_to_mixer;
+    long long mixer_time_received;
+    long long mixer_time_sent;
+
+    template <class Archive>
+    [[maybe_unused]] void serialize(Archive &ar, const unsigned int) {
+        (ar) & (client_time_received);
+        (ar) & (client_time_sent);
+        (ar) & (server_time_received_from_client);
+        (ar) & (server_time_sent_to_client);
+        (ar) & (server_time_received_from_mixer);
+        (ar) & (server_time_sent_to_mixer);
+        (ar) & (mixer_time_received);
+        (ar) & (mixer_time_sent);
+    }
+};
+
 class Message {
 public:
     enum MessageType {
@@ -34,6 +60,7 @@ private:
     double y_;
     std::shared_ptr<std::vector<char>> data_;
     long long time_;
+    ClientServerTimeStamp stamp_;
 
     Message(MessageType type,
             std::int64_t id,
@@ -75,7 +102,10 @@ public:
     [[nodiscard]] double y() const;
     [[nodiscard]] std::shared_ptr<std::vector<char>> data() const;
     [[nodiscard]] long long time() const;
+    [[nodiscard]] ClientServerTimeStamp stamp() const;
+    void set_stamp(ClientServerTimeStamp stamp);
     friend std::ostream &operator<<(std::ostream &os, const Message &msg);
+    void print(const std::string &s);
     template <MessageType type, typename... Args>
     static Message create(Args &&...args) {
         if constexpr (type == MessageType::Empty) {
@@ -105,6 +135,7 @@ public:
         (ar) & (y_);
         (ar) & (data_);
         (ar) & (time_);
+        (ar) & (stamp_);
     }
 };
 

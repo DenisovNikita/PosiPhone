@@ -8,7 +8,8 @@ long long utils::utils::cur_time() {
 }
 
 double utils::utils::count_coef(double x1, double y1, double x2, double y2) {
-    return 1.0 / fmax(1.0, sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2)) / 10.0);
+    return 1.0 / fmax(1.0, sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2)) /
+                               10.0);
 }
 
 namespace PosiPhone {
@@ -86,7 +87,10 @@ void Mixer::putMessage(Message &&msg) {
     }
     AudioFile<float> af;
     af.setAudioBuffer(buf);
-    queue.putMessage(AudioMessage{msg.x(), msg.y(), msg.id(), msg.time(), af});
+    AudioMessage audio_msg{msg.x(), msg.y(), msg.id(), msg.time(), af};
+    audio_msg.stamp_ = msg.stamp();
+    audio_msg.stamp_.mixer_time_received = utils::utils().cur_time();
+    queue.putMessage(audio_msg);
 }
 
 void Mixer::add_id(int new_ids) {
@@ -111,8 +115,11 @@ void Mixer::send_messages() {
 
         Message msg = Message::create<Message::AudioResult>(
             af.id, std::make_shared<std::vector<char>>(vec));
+        msg.set_stamp(af.stamp_);
         msg.print("mixer -> server (send)");
-
+        ClientServerTimeStamp new_stamp = msg.stamp();
+        new_stamp.mixer_time_sent = utils::utils().cur_time();
+        msg.set_stamp(new_stamp);
         result->putMessage(std::move(msg));
     }
 }
