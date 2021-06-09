@@ -89,7 +89,7 @@ void Mixer::putMessage(Message &&msg) {
     af.setAudioBuffer(buf);
     AudioMessage audio_msg{msg.x(), msg.y(), msg.id(), msg.time(), af};
     audio_msg.stamp_ = msg.stamp();
-    audio_msg.stamp_.mixer_time_received = cur_time();
+    audio_msg.stamp_.mixer_time_received = utils::utils().cur_time();
     queue.putMessage(audio_msg);
 }
 
@@ -115,10 +115,10 @@ void Mixer::send_messages() {
 
         Message msg = Message::create<Message::AudioResult>(
             af.id, std::make_shared<std::vector<char>>(vec));
-        msg.set_stamp(af.stamp);
+        msg.set_stamp(af.stamp_);
         msg.print("mixer -> server (send)");
         ClientServerTimeStamp new_stamp = msg.stamp();
-        new_stamp.mixer_time_sent = cur_time();
+        new_stamp.mixer_time_sent = utils::utils().cur_time();
         msg.set_stamp(new_stamp);
         result->putMessage(std::move(msg));
     }

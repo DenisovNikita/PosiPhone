@@ -24,6 +24,18 @@ struct ClientServerTimeStamp {
     long long server_time_sent_to_mixer;
     long long mixer_time_received;
     long long mixer_time_sent;
+
+    template <class Archive>
+    [[maybe_unused]] void serialize(Archive &ar, const unsigned int) {
+        (ar) & (client_time_received);
+        (ar) & (client_time_sent);
+        (ar) & (server_time_received_from_client);
+        (ar) & (server_time_sent_to_client);
+        (ar) & (server_time_received_from_mixer);
+        (ar) & (server_time_sent_to_mixer);
+        (ar) & (mixer_time_received);
+        (ar) & (mixer_time_sent);
+    }
 };
 
 class Message {
@@ -93,6 +105,7 @@ public:
     [[nodiscard]] ClientServerTimeStamp stamp() const;
     void set_stamp(ClientServerTimeStamp stamp);
     friend std::ostream &operator<<(std::ostream &os, const Message &msg);
+    void print(const std::string &s);
     template <MessageType type, typename... Args>
     static Message create(Args &&...args) {
         if constexpr (type == MessageType::Empty) {

@@ -1,15 +1,14 @@
 #include "message.h"
 #include <iostream>
 
-namespace {
-long long cur_time() {
-    return std::chrono::duration_cast<std::chrono::milliseconds>(
-               std::chrono::system_clock::now().time_since_epoch())
-        .count();
-}
-}  // namespace
+
 
 namespace PosiPhone {
+long long cur_time() {
+    return std::chrono::duration_cast<std::chrono::milliseconds>(
+        std::chrono::system_clock::now().time_since_epoch())
+        .count();
+}
 Message::Message()
     : type_(), id_(), name_(), x_(), y_(), data_(), time_(), stamp_() {
 }
@@ -121,6 +120,30 @@ std::ostream &operator<<(std::ostream &os, const Message &msg) {
     os << "name = \"" << msg.name_ << "\"\n";
     os << "time = " << msg.time_ << "\n";
     return os;
+}
+
+void Message::print(const std::string &s) {
+    static std::unordered_map<int, std::string> to_string;
+    if (to_string.empty()) {
+#define ADD_ENUM_ELEMENT(elem) (to_string[(elem)] = #elem)
+        ADD_ENUM_ELEMENT(Message::Empty);
+        ADD_ENUM_ELEMENT(Message::Connect);
+        ADD_ENUM_ELEMENT(Message::Create);
+        ADD_ENUM_ELEMENT(Message::Move);
+        ADD_ENUM_ELEMENT(Message::AudioSource);
+        ADD_ENUM_ELEMENT(Message::AudioResult);
+        ADD_ENUM_ELEMENT(Message::Destroy);
+        ADD_ENUM_ELEMENT(Message::Check_connection);
+        ADD_ENUM_ELEMENT(Message::Request_new_info);
+#undef ADD_ENUM_ELEMENT
+    }
+    LOG(INFO) << s << ":\n";
+    LOG(INFO) << "Got " << to_string[type()] << " message\n";
+    LOG(INFO) << "id = " << id() << "\n";
+    LOG(INFO) << "x  = " << x() << "\n";
+    LOG(INFO) << "y  = " << y() << "\n";
+    LOG(INFO) << "name = " << name() << "\n";
+    LOG(INFO) << "create_time  = " << time() << "\n";
 }
 
 }  // namespace PosiPhone
