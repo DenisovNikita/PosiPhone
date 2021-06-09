@@ -39,6 +39,7 @@ Recorder::Recorder(Model *model, QObject *parent)
 }
 
 void Recorder::send_audio() {
+    qDebug() << "recorder:" << proceed_audio << buffer.size();
     if (proceed_audio) {
         model->send_audio_data(buffer.read_and_clear());
     } else {
@@ -76,6 +77,7 @@ void Player::receive_audio() {
     } else {
         buffer.clear();
     }
+    qDebug() << "player:" << proceed_audio << buffer.size();
 }
 
 RecorderRunner::RecorderRunner(Model *model, QObject *parent)

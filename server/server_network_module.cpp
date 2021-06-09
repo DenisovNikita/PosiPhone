@@ -17,6 +17,9 @@ Server_network_module::Server_network_module()
 void Server_network_module::messageAvailable(Message &&msg) noexcept {
     if (msg.type() == Message::MessageType::AudioResult) {  // send to one
                                                             // client from mixer
+        ClientServerTimeStamp new_stamp = msg.stamp();
+        new_stamp.server_time_received_from_mixer = cur_time();
+        msg.set_stamp(new_stamp);
         clients_data.messages[msg.id()].push_back(std::move(msg));
     } else {
         // Other MessageType's are not suitable situation for message from
@@ -31,12 +34,18 @@ void Server_network_module::send_to_all_clients_except_one(Message &&msg) {
               << ", from_id = " << msg.id() << "\n";
     for (auto &[id, v] : clients_data.messages) {
         if (msg.id() != id) {
+            ClientServerTimeStamp new_stamp = msg.stamp();
+            new_stamp.server_time_sent_to_client = cur_time();
+            msg.set_stamp(new_stamp);
             v.push_back(msg);
         }
     }
 }
 
 void Server_network_module::send_to_one_client(Message &&msg) {
+    ClientServerTimeStamp new_stamp = msg.stamp();
+    new_stamp.server_time_sent_to_client = cur_time();
+    msg.set_stamp(new_stamp);
     send(socket, std::move(msg));
 }
 

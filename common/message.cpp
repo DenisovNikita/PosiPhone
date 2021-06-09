@@ -10,7 +10,8 @@ long long cur_time() {
 }  // namespace
 
 namespace PosiPhone {
-Message::Message() : type_(), id_(), name_(), x_(), y_(), data_(), time_() {
+Message::Message()
+    : type_(), id_(), name_(), x_(), y_(), data_(), time_(), stamp_() {
 }
 
 Message::Message(MessageType type,
@@ -54,6 +55,14 @@ std::shared_ptr<std::vector<char>> Message::data() const {
 
 long long Message::time() const {
     return time_;
+}
+
+void Message::set_stamp(ClientServerTimeStamp stamp) {
+    stamp_ = stamp;
+}
+
+ClientServerTimeStamp Message::stamp() const {
+    return stamp_;
 }
 
 Message Message::create_by_id(MessageType type, std::int64_t id) {

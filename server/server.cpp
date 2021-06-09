@@ -1,7 +1,7 @@
 #include "message.h"
+#include "mixer.h"
 #include "network_utils.h"
 #include "server_network_module.h"
-#include "mixer.h"
 
 namespace PosiPhone {
 namespace {
@@ -32,6 +32,9 @@ int main(int argc, char *argv[]) {
     std::thread thread_for_clients_messages([&]() {
         while (true) {
             PosiPhone::Message msg = PosiPhone::receive(server_module.socket);
+            PosiPhone::ClientServerTimeStamp new_stamp = msg.stamp();
+            new_stamp.server_time_received_from_client = PosiPhone::cur_time();
+            msg.set_stamp(new_stamp);
             if (msg.id() != 0) {
                 int new_time = PosiPhone::cur_time() - start;
                 server_module.clients_data.update_last_time(msg.id(), new_time);
@@ -79,9 +82,9 @@ int main(int argc, char *argv[]) {
                     PosiPhone::Message::create<PosiPhone::Message::Empty>());
                 mixer.putMessage(std::move(msg));
 
-//                server_module.send_to_all_clients_except_one(
-//                    PosiPhone::Message::create<PosiPhone::Message::AudioResult>(
-//                        msg.id(), msg.data()));
+                //                server_module.send_to_all_clients_except_one(
+                //                    PosiPhone::Message::create<PosiPhone::Message::AudioResult>(
+                //                        msg.id(), msg.data()));
             } else if (msg.type() == PosiPhone::Message::Check_connection) {
                 server_module.send_to_one_client(std::move(msg));
             } else if (msg.type() == PosiPhone::Message::Request_new_info) {

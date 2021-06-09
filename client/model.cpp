@@ -76,13 +76,20 @@ void Model::send_audio_message(Message &&msg) {
 }
 
 void Model::send_audio_data(const std::shared_ptr<std::vector<char>> &ptr) {
-    send_message(Message::create<Message::AudioSource>(
-        this_user.id(), this_user.x(), this_user.y(), ptr));
+    Message msg = Message::create<Message::AudioSource>(
+        this_user.id(), this_user.x(), this_user.y(), ptr);
+    ClientServerTimeStamp new_stamp = msg.stamp();
+    new_stamp.client_time_sent = cur_time();
+    msg.set_stamp(new_stamp);
+    client.send_message(std::move(msg));
 }
 
 std::shared_ptr<std::vector<char>> Model::receive_audio_data() {
     Message msg;
     audio_queue.read(msg);
+    ClientServerTimeStamp new_stamp = msg.stamp();
+    new_stamp.client_time_received = cur_time();
+    msg.set_stamp(new_stamp);
     return msg.data();
 }
 
