@@ -23,8 +23,7 @@ QAudioFormat setWavFormat(const QAudioDeviceInfo &dev_info) {
 
 namespace PosiPhone {
 BaseAudio::BaseAudio(Model *model, QObject *parent)
-    : QObject(parent), proceed_audio(false), model(model) {
-    buffer.open(QBuffer::ReadWrite);
+    : QObject(parent), proceed_audio(false), model(model), buffer(&array) {
 }
 
 void BaseAudio::button_clicked() {
@@ -39,19 +38,30 @@ Recorder::Recorder(Model *model, QObject *parent)
 }
 
 void Recorder::send_audio() {
+//    QMetaObject::invokeMethod(qApp, [&]() { recorder.suspend(); });
     if (proceed_audio) {
-        model->send_audio_data(buffer.read_and_clear());
-    } else {
-        buffer.clear();
+        std::vector<char> tmp;
+        tmp.assign(array.data(), array.data() + array.size());
+        model->send_audio_data(std::make_shared<std::vector<char>>(tmp));
     }
+//    array.clear();
+    buffer.seek(0);
+    qDebug() << "recorder:" << buffer.pos() << buffer.size() << array.size();
+//    QMetaObject::invokeMethod(qApp, [&]() { recorder.resume(); });
 }
 
 void Recorder::start() {
-    recorder.start(&buffer);
+    QMetaObject::invokeMethod(qApp, [this]() {
+        buffer.open(QBuffer::WriteOnly);
+        recorder.start(&buffer);
+    });
 }
 
 void Recorder::stop() {
-    recorder.stop();
+    QMetaObject::invokeMethod(qApp, [this]() {
+        recorder.stop();
+        buffer.close();
+    });
 }
 
 Player::Player(Model *model, QObject *parent)
@@ -59,34 +69,43 @@ Player::Player(Model *model, QObject *parent)
       player(setWavFormat(QAudioDeviceInfo::defaultOutputDevice())) {
     connect(&player, &QAudioOutput::notify, this, &Player::receive_audio);
     player.setNotifyInterval(50);
+    connect(&player, &QAudioOutput::stateChanged, [](QAudio::State state) { qDebug() << state; });
 }
 
 void Player::start() {
-    player.start(&buffer);
+    QMetaObject::invokeMethod(qApp, [this]() {
+        buffer.open(QBuffer::ReadOnly);
+        player.start(&buffer);
+    });
 }
 
 void Player::stop() {
-    player.stop();
+    QMetaObject::invokeMethod(qApp, [this]() {
+        player.stop();
+        buffer.close();
+    });
 }
 
 void Player::receive_audio() {
-    auto data = model->receive_audio_data();
-    if (proceed_audio) {
-        buffer.clear_and_write(data);
+//    QMetaObject::invokeMethod(qApp, [&]() { player.suspend(); });
+    auto ptr = model->receive_audio_data();
+
+    if (proceed_audio && ptr) {
+        array = QByteArray(ptr->data(), static_cast<int>(ptr->size()));
+        qDebug() << "player:" << array.size() << QByteArray(ptr->data(), ptr->size()).size();
     } else {
-        buffer.clear();
+        array = QByteArray();
     }
+    player.setBufferSize(array.size());
+    buffer.seek(0);
+//    QMetaObject::invokeMethod(qApp, [&]() { player.resume(); });
 }
 
 RecorderRunner::RecorderRunner(Model *model, QObject *parent)
     : QObject(parent), recorder(new Recorder(model)), thread(new QThread) {
     recorder->moveToThread(thread);
-    connect(thread, &QThread::started, [&]() {
-        QMetaObject::invokeMethod(this, [&]() { recorder->start(); });
-    });
-    connect(this, &RecorderRunner::finished, [&]() {
-        QMetaObject::invokeMethod(this, [&]() { recorder->stop(); });
-    });
+    connect(thread, &QThread::started, [&]() { recorder->start(); });
+    connect(this, &RecorderRunner::finished, [&]() { recorder->stop(); });
     connect(thread, &QThread::finished, recorder, &Recorder::deleteLater);
     connect(thread, &QThread::finished, thread, &QThread::deleteLater);
 }
@@ -108,12 +127,8 @@ RecorderRunner::~RecorderRunner() noexcept {
 PlayerRunner::PlayerRunner(Model *model, QObject *parent)
     : QObject(parent), player(new Player(model)), thread(new QThread) {
     player->moveToThread(thread);
-    connect(thread, &QThread::started, [&]() {
-        QMetaObject::invokeMethod(this, [&]() { player->start(); });
-    });
-    connect(this, &PlayerRunner::finished, [&]() {
-        QMetaObject::invokeMethod(this, [&]() { player->stop(); });
-    });
+    connect(thread, &QThread::started, [&]() { player->start(); });
+    connect(this, &PlayerRunner::finished, [&]() { player->stop(); });
     connect(thread, &QThread::finished, player, &Player::deleteLater);
     connect(thread, &QThread::finished, thread, &QThread::deleteLater);
 }

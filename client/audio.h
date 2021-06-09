@@ -18,7 +18,9 @@ class BaseAudio : public QObject {
 protected:
     bool proceed_audio;
     Model *model;
-    AudioBuffer buffer;
+    QBuffer buffer;
+    QByteArray array;
+//    AudioBuffer buffer;
     explicit BaseAudio(Model *model, QObject *parent = nullptr);
 
 public slots:
