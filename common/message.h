@@ -16,14 +16,14 @@ namespace PosiPhone {
 long long cur_time();
 
 struct ClientServerTimeStamp {
-    long long client_time_received;
-    long long client_time_sent;
-    long long server_time_received_from_client;
-    long long server_time_sent_to_client;
-    long long server_time_received_from_mixer;
-    long long server_time_sent_to_mixer;
-    long long mixer_time_received;
-    long long mixer_time_sent;
+    long long client_time_received = 0;
+    long long client_time_sent = 0;
+    long long server_time_received_from_client = 0;
+    long long server_time_sent_to_client = 0;
+    long long server_time_received_from_mixer = 0;
+    long long server_time_sent_to_mixer = 0;
+    long long mixer_time_received = 0;
+    long long mixer_time_sent = 0;
 
     template <class Archive>
     [[maybe_unused]] void serialize(Archive &ar, const unsigned int) {
