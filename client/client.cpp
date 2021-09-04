@@ -6,7 +6,7 @@
 
 namespace PosiPhone {
 namespace {
-const auto server_name = "tcp://188.119.67.234:" + std::to_string(port);
+const auto server_name = "tcp://178.154.211.128:" + std::to_string(port);
 
 int set_connection(zmq::socket_t &socket) {
     socket.connect(server_name);
