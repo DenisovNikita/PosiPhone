@@ -8,7 +8,7 @@ QIcon init_icon(const std::string &name, bool b) {
 }
 QAudioFormat setWavFormat(const QAudioDeviceInfo &dev_info) {
     static QAudioFormat format;
-    format.setSampleRate(44100);
+    format.setSampleRate(2000);
     format.setChannelCount(1);
     format.setSampleSize(32);
     format.setCodec("audio/pcm");
@@ -55,7 +55,7 @@ Recorder::Recorder(Model *model, QWidget *parent)
             std::vector<char> tmp;
             tmp.assign(buffer.buffer().data(),
                        buffer.buffer().data() + buffer.buffer().size());
-            model->send_message(Message::create<Message::AudioSource>(
+            model->write_audio_message(Message::create<Message::AudioSource>(
                 model->get_id(), model->get_x(), model->get_y(),
                 std::make_shared<std::vector<char>>(tmp)));
         }

@@ -121,10 +121,10 @@ std::vector<AudioMessage> Mixer::mix() {
     long long ticker = utils::utils().cur_time();
     std::vector<AudioMessage> input;
     for (auto &m : messages_sorted) {
-        while (!m.empty() && m.begin()->time < ticker - normal_delay * 2) {
+        while (!m.empty() && m.begin()->time < ticker - normal_delay * 20) {
             m.erase(m.begin());
         }
-        if (!m.empty() && m.begin()->time >= ticker - normal_delay * 2 &&
+        if (!m.empty() && m.begin()->time >= ticker - normal_delay * 20 &&
             m.begin()->time < ticker - normal_delay) {
             LOG(INFO) << "ticker - time = " << ticker - m.begin()->time << "\n";
             input.push_back(*m.begin());
