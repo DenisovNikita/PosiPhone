@@ -1,7 +1,25 @@
 # PosiPhone
 
-[Структура проекта](https://drive.google.com/drive/folders/1ASIoVhhzhAFlpNC7Bs1EUYrgON7MrDJA?usp=sharing)
+This is a position-based conference call system
 
-[Подробный вид аудиочасти](https://drive.google.com/file/d/11VsTruM49Ltm5yGHFGXEgfcJXVZcLYO-/view?usp=sharing)
+## Features
 
-Задачи переехали в TODO.md
+* GUI was implemented using [Qt](https://www.qt.io/)
+* [Qt Multimedia](https://doc.qt.io/qt-5/qtmultimedia-module.html) module was used for Audio recording & playing
+* [ZMQ](https://zeromq.org) library is for Network module
+* Multithreading by using `std::thread` and [Facebook Folly](https://github.com/facebook/folly)
+* Audio mixer was written using [AudioFile library](https://github.com/adamstark/AudioFile)
+
+## How to build PosiPhone
+
+1. Clone this repo
+2. Run `build.sh` script as root to install necessary libs
+3. Enjoy
+
+## Demo
+
+![](./resources/demo.gif)
+
+## Project structure
+
+![](./resources/structure.png)
