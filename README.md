@@ -18,7 +18,7 @@ This is a position-based conference call system
 
 ## Demo
 
-![](./resources/demo.png)
+![](./resources/demo.gif)
 
 ## Project structure
 

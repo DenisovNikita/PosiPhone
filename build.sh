@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+apt-get update
+
 # install folly dependencies
 apt-get install \
     git \
@@ -60,6 +62,10 @@ apt-get install \
     qt5-default \
     qtmultimedia5-dev \
     libqt5multimedia5-plugins
+
+# install boost & ZMQ
+apt-get install libboost-all-dev \
+    libzmq3-dev
 
 # install AudioFile
 git clone https://github.com/adamstark/AudioFile
