@@ -1,4 +1,13 @@
 FROM ubuntu:20.04
 
-RUN apk update && apk upgrade && apk add bash
-CMD ["bash", "./build.sh"]
+ARG DEBIAN_FRONTEND=noninteractive
+ENV TZ=Europe/Moscow
+
+RUN apt-get update && apt-get install -y \
+    libboost-all-dev \
+    libgflags-dev \
+    libgoogle-glog-dev \
+    libzmq3-dev \
+    qt5-default
+COPY server /server
+ENTRYPOINT ./server
