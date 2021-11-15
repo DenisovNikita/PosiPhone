@@ -9,5 +9,6 @@ RUN apt-get update && apt-get install -y \
     libgoogle-glog-dev \
     libzmq3-dev \
     qt5-default
-COPY server /server
+COPY server/cmake-build-debug/server /server
+RUN chmod +x /server
 ENTRYPOINT ./server

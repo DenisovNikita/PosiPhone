@@ -16,6 +16,14 @@ This is a position-based conference call system
 2. Run `build.sh` script as root to install necessary libs
 3. Enjoy
 
+## Docker image
+
+Use those commands to run the server in Docker:
+```shell
+sudo docker build -t posiphone-server .
+sudo docker run -it posiphone-server
+```
+
 ## Demo
 
 ![](./resources/demo.gif)

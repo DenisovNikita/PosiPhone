@@ -3,7 +3,8 @@
 apt-get update
 
 # install folly dependencies
-apt-get install \
+apt-get install -y \
+    wget \
     git \
     g++ \
     cmake \
@@ -58,14 +59,12 @@ cd .. && \
 ./build.sh
 
 # install Qt
-apt-get install \
+apt-get install -y \
     qt5-default \
     qtmultimedia5-dev \
     libqt5multimedia5-plugins
 
 # install boost & ZMQ
-apt-get install libboost-all-dev \
+apt-get install -y \
+    libboost-all-dev \
     libzmq3-dev
-
-# install AudioFile
-git clone https://github.com/adamstark/AudioFile
