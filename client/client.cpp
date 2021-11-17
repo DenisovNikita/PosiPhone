@@ -6,7 +6,7 @@
 
 namespace PosiPhone {
 namespace {
-const auto server_name = "tcp://84.252.138.204:" + std::to_string(port);
+const auto server_name = "tcp://51.250.1.89:" + std::to_string(port);
 
 int set_connection(zmq::socket_t &socket) {
     socket.connect(server_name);
@@ -25,8 +25,6 @@ Client::Client(Model *m)
     eventBase->runInEventBaseThread(
         [eventBase, this]() { startConsuming(eventBase, &queue); });
 
-    // TODO: connect from model via Client::connect_to_server() in order to
-    //  write error messages to users
     assert(set_connection(socket) == 0);
 
     network_thread = std::thread([&]() {
@@ -45,15 +43,15 @@ Client::Client(Model *m)
             send(local_socket, std::move(pullRequest));
             auto result = receive(local_socket);
             if (result.type() != Message::MessageType::Empty) {
-                LOG(INFO) << "client received from another_client: "
-                          << to_string[result.type()] << std::endl;
+//                LOG(INFO) << "client received from another_client: "
+//                          << to_string[result.type()] << std::endl;
             }
             if (result.type() == Message::MessageType::AudioResult) {
-                model->write_audio_message(std::move(result));
+                model->send_audio_message(std::move(result));
             } else if (result.type() == Message::MessageType::Create ||
                        result.type() == Message::MessageType::Move ||
                        result.type() == Message::MessageType::Destroy) {
-                model->get_queue()->putMessage(std::move(result));
+                model->send_message(std::move(result));
             } else if (result.type() == Message::MessageType::Empty) {
                 continue;
             } else {
@@ -61,14 +59,14 @@ Client::Client(Model *m)
             }
         }
     });
-    LOG(INFO) << "client created" << std::endl;
+//    LOG(INFO) << "client created" << std::endl;
 }
 
 Message Client::send_to_server(Message &&msg) {
     auto res = send_and_receive(socket, std::move(msg));
     if (res.type() != Message::MessageType::Empty) {
-        LOG(INFO) << "client received reply for server request: "
-                  << to_string[res.type()] << std::endl;
+//        LOG(INFO) << "client received reply for server request: "
+//                  << to_string[res.type()] << std::endl;
     }
     return res;
 }
@@ -85,12 +83,12 @@ void Client::messageAvailable(Message &&msg) noexcept {
         msg.type() == Message::MessageType::Destroy) {
         auto res = send_to_server(std::move(msg));
         if (res.type() != Message::MessageType::Empty) {
-            LOG(INFO) << "client received from model: " << to_string[res.type()]
-                      << std::endl;
+//            LOG(INFO) << "client received from model: " << to_string[res.type()]
+//                      << std::endl;
         }
         if (res.type() == Message::MessageType::Connect) {
-            LOG(INFO) << "new_id = " << res.id() << std::endl;
-            model->get_queue()->putMessage(std::move(res));
+//            LOG(INFO) << "new_id = " << res.id() << std::endl;
+            model->send_message(std::move(res));
         }
     } else {
         assert(false);  // must not be other MessageType from model to client
@@ -106,6 +104,14 @@ bool Client::is_ok_connection() {
         model->get_id());
     Message response = send_and_receive(socket, std::move(request));
     return response.type() == Message::MessageType::Check_connection;
+}
+
+void Client::send_message(Message &&msg) {
+    try {
+        queue.tryPutMessage(std::move(msg));
+    } catch (const std::exception &e) {
+        LOG(ERROR) << e.what() << '\n';
+    }
 }
 
 Client::~Client() {

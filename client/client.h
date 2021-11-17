@@ -25,7 +25,7 @@ public:
     bool is_ok_connection();
     Message send_to_server(Message &&msg);
 
-    folly::NotificationQueue<Message> *get_queue();
+    void send_message(Message &&msg);
 
     ~Client() override;
 };

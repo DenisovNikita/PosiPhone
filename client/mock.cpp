@@ -64,7 +64,7 @@ Mock::Mock(Model *model)
 }
 
 void Mock::send_message(Message &&msg) {
-    model->get_queue()->putMessage(std::move(msg));
+    model->send_message(std::move(msg));
 }
 
 }  // namespace PosiPhone

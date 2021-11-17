@@ -26,6 +26,8 @@ find_library(ZMQ_LIBRARY NAMES zmq)
 add_executable(${PROJECT_NAME}
     audio.cpp
     audio.h
+    audio_button.cpp
+    audio_button.h
     client.cpp
     client.h
     login_widget.cpp
@@ -45,7 +47,6 @@ add_executable(${PROJECT_NAME}
     view.ui
 
     ../common/client_fwd.h
-    ../common/common_client.cpp
     ../common/common_server.cpp
     ../common/message.cpp
     ../common/message.h

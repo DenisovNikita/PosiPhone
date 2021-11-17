@@ -1,5 +1,5 @@
-#ifndef GUI_MODEL_H
-#define GUI_MODEL_H
+#ifndef POSIPHONE_MODEL_H
+#define POSIPHONE_MODEL_H
 
 #include <folly/ProducerConsumerQueue.h>
 #include <folly/experimental/ThreadedRepeatingFunctionRunner.h>
@@ -7,13 +7,14 @@
 #include <folly/io/async/ScopedEventBaseThread.h>
 #include <glog/logging.h>
 #include <QMessageBox>
+#include <QObject>
 #include <QString>
-#include <QWidget>
 #include <chrono>
 #include <cstdint>
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include "audio.h"
 #include "client.h"
 #include "login_widget.h"
 #include "message.h"
@@ -23,10 +24,10 @@
 #include "view.h"
 
 namespace PosiPhone {
-class Model final : public QWidget,
+class Model final : public QObject,
                     public folly::NotificationQueue<Message>::Consumer {
     Q_OBJECT
-    std::int64_t ID;
+    User this_user;
     Client client;
     folly::ScopedEventBaseThread thread;
     const uint32_t maxSize = 10'000;
@@ -34,28 +35,20 @@ class Model final : public QWidget,
     folly::ProducerConsumerQueue<Message> audio_queue;
     LoginWidget login_widget;
     View view;
-    std::unordered_map<std::int64_t, std::unique_ptr<User>> users;
+    RecorderRunner recorder_runner;
+    PlayerRunner player_runner;
+    std::unordered_map<std::int64_t, User> users;
     folly::ThreadedRepeatingFunctionRunner runner;
 
 public:
     Model();
     void messageAvailable(Message &&msg) noexcept override;
     std::int64_t get_id() const;
-    double get_x();
-    double get_y();
-    folly::NotificationQueue<Message> *get_queue();
     void send_message(Message &&msg);
-    void read_audio_message(Message &msg);
-    void write_audio_message(Message &&msg);
+    void send_audio_message(Message &&msg);
+    void send_audio_data(const std::shared_ptr<std::vector<char>> &ptr);
+    std::shared_ptr<std::vector<char>> receive_audio_data();
     ~Model() override;
-
-private:
-    void connect_to_view(View *view) const;
-    void connect_to_login_widget(LoginWidget *l) const;
-    void login_checked(Message &&msg);
-    void add_item(Message &&msg);
-    void remove_item(Message &&msg);
-    void set_pos(Message &&msg);
 
 signals:
     void add_item_signal(const PosiPhone::User &user, int type);
@@ -69,8 +62,16 @@ private slots:
     void open_view();
     void close_view();
     void check_login(const QString &login);
+
+private:
+    void connect_to_view(View *view) const;
+    void connect_to_login_widget(LoginWidget *l) const;
+    void login_checked(Message &&msg);
+    void add_item(Message &&msg);
+    void remove_item(Message &&msg);
+    void set_pos(Message &&msg);
 };
 
 }  // namespace PosiPhone
 
-#endif  // GUI_MODEL_H
+#endif  // POSIPHONE_MODEL_H
