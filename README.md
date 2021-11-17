@@ -6,7 +6,7 @@ This is a position-based conference call system
 
 * GUI was implemented using [Qt](https://www.qt.io/)
 * [Qt Multimedia](https://doc.qt.io/qt-5/qtmultimedia-module.html) module was used for Audio recording & playing
-* [ZMQ](https://zeromq.org) library is for Network module
+* [ZMQ](https://zeromq.org) + [Boost](https://www.boost.org/) libraries is for Network modules
 * Multithreading by using `std::thread` and [Facebook Folly](https://github.com/facebook/folly)
 * Audio mixer was written using [AudioFile library](https://github.com/adamstark/AudioFile)
 
