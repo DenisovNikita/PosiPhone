@@ -1,5 +1,5 @@
-#ifndef GUI_MESSAGE_H
-#define GUI_MESSAGE_H
+#ifndef POSIPHONE_MESSAGE_H
+#define POSIPHONE_MESSAGE_H
 
 #include <chrono>
 #include <cstdint>
@@ -74,11 +74,10 @@ public:
     [[nodiscard]] std::shared_ptr<std::vector<char>> data() const;
     [[nodiscard]] long long time() const;
     friend std::ostream &operator<<(std::ostream &os, const Message &msg);
-    void print(const std::string &s);
     template <MessageType type, typename... Args>
     static Message create(Args &&...args) {
         if constexpr (type == MessageType::Empty) {
-            return Message();
+            return {};
         } else if constexpr (type == MessageType::Move) {
             return create_by_id_x_y(type, std::forward<Args>(args)...);
         } else if constexpr (type == MessageType::Connect ||
@@ -109,4 +108,4 @@ public:
 
 }  // namespace PosiPhone
 
-#endif  // GUI_MESSAGE_H
+#endif  // POSIPHONE_MESSAGE_H

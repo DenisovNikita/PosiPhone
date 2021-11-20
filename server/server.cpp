@@ -38,7 +38,7 @@ int main(int argc, char *argv[]) {
             }
 
             if (msg.type() != PosiPhone::Message::Request_new_info) {
-                msg.print("client -> server");
+//                msg.print("client -> server");
             }
 
             if (msg.type() ==
@@ -78,10 +78,6 @@ int main(int argc, char *argv[]) {
                 server_module.send_to_one_client(
                     PosiPhone::Message::create<PosiPhone::Message::Empty>());
                 mixer.putMessage(std::move(msg));
-
-//                server_module.send_to_all_clients_except_one(
-//                    PosiPhone::Message::create<PosiPhone::Message::AudioResult>(
-//                        msg.id(), msg.data()));
             } else if (msg.type() == PosiPhone::Message::Check_connection) {
                 server_module.send_to_one_client(std::move(msg));
             } else if (msg.type() == PosiPhone::Message::Request_new_info) {
@@ -97,7 +93,7 @@ int main(int argc, char *argv[]) {
             } else {
                 // Other MessageType's are not suitable situation for message
                 // from client to server
-                msg.print("client -> sever: bad message!");
+                LOG(INFO) << "client -> sever: bad message!\n" << msg << '\n';
                 assert(false);
             }
         }

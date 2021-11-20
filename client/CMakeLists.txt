@@ -10,6 +10,8 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+add_compile_options(-static)
+
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Ofast")
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Werror")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DQT_NO_FOREACH")
@@ -46,13 +48,10 @@ add_executable(${PROJECT_NAME}
     view.h
     view.ui
 
-    ../common/client_fwd.h
-    ../common/common_server.cpp
     ../common/message.cpp
     ../common/message.h
     ../common/network_utils.cpp
     ../common/network_utils.h
-    ../common/server_fwd.h
 
     ../resources/resources.qrc
 )
@@ -62,7 +61,6 @@ qt5_use_modules(${PROJECT_NAME} Widgets Multimedia)
 target_include_directories(${PROJECT_NAME} PRIVATE
     ../common/
     ../resources/
-    ../server/
     ${Boost_INCLUDE_DIRS}
     ${FOLLY_INCLUDE_DIR}
     ${ZMQ_INCLUDE_DIR}

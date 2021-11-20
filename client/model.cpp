@@ -49,7 +49,7 @@ void Model::messageAvailable(Message &&msg) noexcept {
     } else if (msg.type() == Message::Destroy) {
         remove_item(std::move(msg));
     } else {
-        LOG(WARNING) << "Unknown query\n";
+        LOG(WARNING) << "Unknown message\n";
     }
 }
 

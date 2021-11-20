@@ -1,5 +1,4 @@
 #include "server_network_module.h"
-#include "client.h"
 #include "network_utils.h"
 
 namespace PosiPhone {
@@ -14,6 +13,10 @@ Server_network_module::Server_network_module()
     socket.bind("tcp://*:" + std::to_string(port));
 }
 
+folly::NotificationQueue<Message> *Server_network_module::get_queue() {
+    return &queue;
+}
+
 void Server_network_module::messageAvailable(Message &&msg) noexcept {
     if (msg.type() == Message::MessageType::AudioResult) {  // send to one
                                                             // client from mixer
@@ -21,14 +24,14 @@ void Server_network_module::messageAvailable(Message &&msg) noexcept {
     } else {
         // Other MessageType's are not suitable situation for message from
         // mixer to server
-        msg.print("mixer -> server: bad message!");
+        LOG(INFO) << "mixer -> server: bad message!\n" << msg << '\n';
         assert(false);
     }
 }
 
 void Server_network_module::send_to_all_clients_except_one(Message &&msg) {
-    LOG(INFO) << "send_to_all: " << to_string[msg.type()]
-              << ", from_id = " << msg.id() << "\n";
+//    LOG(INFO) << "send_to_all: " << to_string[msg.type()]
+//              << ", from_id = " << msg.id() << "\n";
     for (auto &[id, v] : clients_data.messages) {
         if (msg.id() != id) {
             v.push_back(msg);

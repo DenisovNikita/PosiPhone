@@ -5,7 +5,7 @@ namespace {
 QAudioFormat setWavFormat(const QAudioDeviceInfo &dev_info) {
     static QAudioFormat format;
     if (format.sampleRate() == -1) {
-        format.setSampleRate(44100);
+        format.setSampleRate(6000);
         format.setChannelCount(1);
         format.setSampleSize(32);
         format.setCodec("audio/pcm");
@@ -40,7 +40,7 @@ void Recorder::start() {
         buffer.open(QBuffer::WriteOnly);
         recorder.start(&buffer);
         runner.add("Recorder", [this]() {
-            LOG(INFO) << "recorder\n";
+            LOG(INFO) << "recorder " << array.size() << ' ' << buffer.size() << "\n";
             if (proceed_audio) {
                 model->send_audio_data(std::make_shared<std::vector<char>>(
                     array.begin(), array.end()));
@@ -69,7 +69,7 @@ void Player::start() {
         buffer.open(QBuffer::ReadOnly);
         player.start(&buffer);
         runner.add("Player", [this]() {
-            LOG(INFO) << "player\n";
+            LOG(INFO) << "player " << array.size() << ' ' << buffer.size() << "\n";
             auto ptr = model->receive_audio_data();
             if (proceed_audio && ptr) {
                 array = QByteArray(ptr->data(), ptr->size());

@@ -12,7 +12,6 @@
 #include <iostream>
 #include <set>
 #include <zmq.hpp>
-#include "client_fwd.h"
 #include "message.h"
 
 namespace PosiPhone {
@@ -42,7 +41,6 @@ public:
     folly::ScopedEventBaseThread th;
     static const uint32_t max_size = 10'000;
     folly::NotificationQueue<Message> queue;
-    //    Mixer *mixer;  // TODO: support mixer integrate
 
     Server_network_module();
 

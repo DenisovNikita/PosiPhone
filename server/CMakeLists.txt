@@ -15,25 +15,20 @@ find_path(ZMQ_INCLUDE_DIR zmq.h)
 find_library(ZMQ_LIBRARY NAMES zmq)
 
 add_executable(${PROJECT_NAME}
-    config.txt
     mixer.cpp
     mixer.h
     server.cpp
     server_network_module.h
     server_network_module.cpp
 
-    ../common/client_fwd.h
-        ../common/common_server.cpp
     ../common/message.cpp
     ../common/message.h
     ../common/network_utils.cpp
     ../common/network_utils.h
-    ../common/server_fwd.h
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE
     ../common/
-    ../client/
     ${Boost_INCLUDE_DIRS}
     ${FOLLY_INCLUDE_DIR}
     ${ZMQ_INCLUDE_DIR}

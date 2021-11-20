@@ -76,7 +76,7 @@ void Mixer::messageAvailable(AudioMessage &&msg) noexcept {
 }
 
 void Mixer::putMessage(Message &&msg) {
-    msg.print("server -> mixer");
+    LOG(INFO) << "server -> mixer\n" << msg << '\n';
     std::vector<char> vec(*msg.data());
     auto *ptr = reinterpret_cast<float *>(vec.data());
     int size = vec.size() / sizeof(float);
@@ -111,7 +111,7 @@ void Mixer::send_messages() {
 
         Message msg = Message::create<Message::AudioResult>(
             af.id, std::make_shared<std::vector<char>>(vec));
-        msg.print("mixer -> server (send)");
+        LOG(INFO) << "mixer -> server (send)\n" << msg << '\n';
 
         result->putMessage(std::move(msg));
     }
@@ -126,7 +126,7 @@ std::vector<AudioMessage> Mixer::mix() {
         }
         if (!m.empty() && m.begin()->time >= ticker - normal_delay * 20 &&
             m.begin()->time < ticker - normal_delay) {
-            LOG(INFO) << "ticker - time = " << ticker - m.begin()->time << "\n";
+//            LOG(INFO) << "ticker - time = " << ticker - m.begin()->time << "\n";
             input.push_back(*m.begin());
         }
     }
@@ -134,14 +134,14 @@ std::vector<AudioMessage> Mixer::mix() {
 }
 
 Mixer::Mixer(folly::NotificationQueue<Message> *result_) : result(result_) {
-    std::ifstream config("include/Mixer/config.txt");
+    std::ifstream config("config.txt");
     config >> normal_delay >> number_id;
     messages_sorted.resize(10);
     sample.samples.resize(1);
     sample.samples[0].resize(2, 0);
 
     runner.add("Mixer", [this]() {
-        LOG(INFO) << "_______________________________________________\n";
+//        LOG(INFO) << "_______________________________________________\n";
         request_answer = mix();
         send_messages();
         return std::chrono::milliseconds(50);

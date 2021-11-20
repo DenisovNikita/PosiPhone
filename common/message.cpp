@@ -1,8 +1,7 @@
 #include "message.h"
-#include <glog/logging.h>
 #include <iostream>
+#include <unordered_map>
 #include <utility>
-#include "network_utils.h"
 
 namespace {
 long long cur_time() {
@@ -60,14 +59,14 @@ long long Message::time() const {
 }
 
 Message Message::create_by_id(MessageType type, std::int64_t id) {
-    return Message(type, id, {}, {}, {}, {});
+    return {type, id, {}, {}, {}, {}};
 }
 
 Message Message::create_by_id_x_y(MessageType type,
                                   std::int64_t id,
                                   double x,
                                   double y) {
-    return Message(type, id, {}, x, y, {});
+    return {type, id, {}, x, y, {}};
 }
 
 Message Message::create_by_id_name_x_y(MessageType type,
@@ -75,13 +74,13 @@ Message Message::create_by_id_name_x_y(MessageType type,
                                        std::string name,
                                        double x,
                                        double y) {
-    return Message(type, id, std::move(name), x, y, {});
+    return {type, id, std::move(name), x, y, {}};
 }
 
 Message Message::create_by_id_data(MessageType type,
                                    std::int64_t id,
                                    std::shared_ptr<std::vector<char>> data) {
-    return Message(type, id, {}, {}, {}, std::move(data));
+    return {type, id, {}, {}, {}, std::move(data)};
 }
 
 Message Message::create_by_id_x_y_data(
@@ -90,10 +89,21 @@ Message Message::create_by_id_x_y_data(
     double x,
     double y,
     std::shared_ptr<std::vector<char>> data) {
-    return Message(type, id, {}, x, y, std::move(data));
+    return {type, id, {}, x, y, std::move(data)};
 }
 
 std::ostream &operator<<(std::ostream &os, const Message &msg) {
+    static std::unordered_map<int, std::string> to_string = {
+        {Message::Empty, "Empty"},
+        {Message::Connect, "Connect"},
+        {Message::Create, "Create"},
+        {Message::Move, "Move"},
+        {Message::AudioSource, "AudioSource"},
+        {Message::AudioResult, "AudioResult"},
+        {Message::Destroy, "Destroy"},
+        {Message::Check_connection, "Check connection"},
+        {Message::Request_new_info, "Request new info"},
+    };
     os << "Got " << to_string[msg.type_] << " message\n";
     os << "id = " << msg.id_ << "\n";
     os << "x  = " << msg.x_ << "\n";
@@ -101,16 +111,6 @@ std::ostream &operator<<(std::ostream &os, const Message &msg) {
     os << "name = " << msg.name_ << "\n";
     os << "create_time  = " << msg.time_ << "\n";
     return os;
-}
-
-void Message::print(const std::string &s) {
-    LOG(INFO) << s << ":\n";
-    LOG(INFO) << "Got " << to_string[type()] << " message\n";
-    LOG(INFO) << "id = " << id() << "\n";
-    LOG(INFO) << "x  = " << x() << "\n";
-    LOG(INFO) << "y  = " << y() << "\n";
-    LOG(INFO) << "name = " << name() << "\n";
-    LOG(INFO) << "create_time  = " << time() << "\n";
 }
 
 }  // namespace PosiPhone

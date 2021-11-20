@@ -399,7 +399,7 @@ bool AudioFile<T>::addAudioBuffer(AudioBuffer &newBuffer, double coef) {
         assert(newBuffer[k].size() == numSamples);
 
         // samples[k].resize (numSamples, 0);
-        LOG(INFO) << "sample - newBuf = " << samples[k].size() - newBuffer[k].size() << "\n";
+//        LOG(INFO) << "sample - newBuf = " << samples[k].size() - newBuffer[k].size() << "\n";
         for (size_t i = 0; i < std::min(samples[k].size(), newBuffer[k].size()); i++) {
             samples[k][i] += newBuffer[k][i] * coef;
         }
